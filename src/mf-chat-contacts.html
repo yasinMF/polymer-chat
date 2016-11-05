@@ -27,31 +27,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
 
 
+    <firebase-query
+      id="searchQuery"
+      app-name="mf-chat"
+      path="users"
+      order-by-child="name"
+      start-at="[[searchTerm]]"
+      data="{{queryResponse}}">
+    </firebase-query>
+
 
     <app-header-layout fullbleed>
       <app-header>
         <app-toolbar>
-          <div>MF Chat</div>
-          <paper-menu-button>
-
-          <paper-icon-button icon="menu" class="dropdown-trigger"></paper-icon-button>
-            <paper-menu class="dropdown-content">
-              <a href="/settings"><paper-item>Settings</paper-item></a>
-              <a href="/signout"><paper-item>Log out</paper-item></a>
-            </paper-menu>
-          </paper-menu-button>
-
-        </app-toolbar>
+          <paper-input value="{{searchTerm}}"></paper-input>
+        </app-toolbars>
 
       </app-header>
       <div class="content">
 
+        <template is="dom-repeat" items="[[contacts]]" as="contact" filter="_contactFilter">
+          <p>[[contact.name]]</p>
+          <p>[[contact.email]]</p>
+        </template>
     
       </div>
     </app-header-layout>
 
     
-
+    [[loading]]
 
 
   </template>
@@ -60,6 +64,48 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     Polymer({
       is: 'mf-chat-contacts',
 
+      properties:{
+        queryResponse: {
+          type: Object,
+        },
+
+        loading:{
+          type: Boolean,
+          value: true
+        }
+      },
+
+      observers:[
+        '_queryChanged(searchTerm)',
+        
+      ],
+
+      _transactionsComplete:function(){
+        console.log('done')
+      },
+
+      _queryChanged:function(query){
+        this.loading = true;
+        let ref = this.$.searchQuery.ref;
+        ref.once('value', function(snapshot) {
+          console.log('complete')
+          this.loading = false;
+          this.set('contacts', this.queryResponse)
+        }.bind(this));
+
+      },
+
+
+      _updateResponse:function(){
+
+      },
+
+      _contactFilter:function(item){
+
+        return item.uid != this.user.uid;
+        
+
+      }
 
     });
   </script>
