@@ -22,6 +22,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       paper-button{
         border-radius: 0px;
       }
+
+      #footer-button{
+        position: fixed;
+      }
     </style>
 
 
@@ -36,7 +40,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <paper-menu class="dropdown-content">
               <a href="/settings"><paper-item>Settings</paper-item></a>
               <a href="/signout"><paper-item>Log out</paper-item></a>
-              
             </paper-menu>
           </paper-menu-button>
 
@@ -44,9 +47,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       </app-header>
       <div class="content">
-        
+
+    
       </div>
     </app-header-layout>
+
+    
+    <a id="footer-button" href="/contacts">
+      <paper-button>
+        New conversation
+      </paper-button>
+    </a>
 
 
   </template>
