@@ -32,9 +32,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       paper-input{
         width: 100%;
       }
+
       .contact-chip{
         background-color: rgba(0,0,0,0.12);
-        padding: 4px;
+        padding-top: 0.25rem;
+        padding-bottom: 0.25rem;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        margin: 0.25rem;
+        border-radius: 100px;
+      }
+
+      .contact-chip span{
+        display: block;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+      }
+
+      app-header{
+        background-color: #fff;
       }
     </style>
 
@@ -48,42 +64,45 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </firebase-query>
 
 
-    <app-header-layout fullbleed>
-      <app-header>
-        <div class="horizontal layout">
 
-          <div class="flex horizontal layout wrap">
+    <app-header>
+      <div class="">
 
+          <iron-selector class="flex horizontal layout wrap" selected-values="{{selectedContacts}}" multi items="[[contacts]]" attr-for-selected="value">
             <template is="dom-repeat" items="[[selectedContacts]]" as="contact">
-              <div class="contact-chip horizontal layout">
-                [[contact.name]]
+              <div class="contact-chip horizontal layout" value="[[contact]]">
+                <span>
+                  [[contact.name]]
+                </span>
+                <iron-icon icon="close"></iron-icon>
+
               </div>
             </template>
+          </iron-selector>
 
-            <paper-input value="{{searchTerm}}" placeholder="Enter a name..." no-label-float></paper-input>
+          <paper-input value="{{searchTerm}}" placeholder="Enter a name..." no-label-float></paper-input>
 
-          </div>
-        </div>
-
-      </app-header>
-      <div class="content">
-
-
-
-        <iron-selector selected-values="{{selectedContacts}}" multi items="[[contacts]]" attr-for-selected="value" >
-          <template is="dom-repeat" items="[[contacts]]" as="contact" filter="_contactFilter">
-            <paper-item value="[[contact]]">
-              <paper-item-body two-line>
-                <div>[[contact.name]]</div>
-                <div secondary>[[contact.email]]</div>
-              </paper-item-body>
-              <!-- <iron-icon icon="warning"></iron-icon> -->
-            </paper-item>
-          </template>
-        </iron-selector>
-    
       </div>
-    </app-header-layout>
+
+    </app-header>
+    <div class="content">
+
+
+
+      <iron-selector selected-values="{{selectedContacts}}" multi items="[[contacts]]" attr-for-selected="value" >
+        <template is="dom-repeat" items="[[contacts]]" as="contact" filter="_contactFilter">
+          <paper-item value="[[contact]]">
+            <paper-item-body two-line>
+              <div>[[contact.name]]</div>
+              <div secondary>[[contact.email]]</div>
+            </paper-item-body>
+            <!-- <iron-icon icon="warning"></iron-icon> -->
+          </paper-item>
+        </template>
+      </iron-selector>
+  
+    </div>
+
 
     <a class="footer-button" href="/contacts">
       <paper-button>

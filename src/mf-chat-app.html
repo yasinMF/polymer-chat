@@ -53,7 +53,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 			],
 
 			_userChanged:function(user, signedIn, statusKnown){
-				console.log('user changed', this.user);
 				if(user.hasOwnProperty('uid') && (this.routeData.page == 'login' || !this.routeData.page)){
 					this.set('route.path', 'home')
 				}
