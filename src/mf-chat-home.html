@@ -24,7 +24,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
 
-    <h1>Home</h1>
+
+
+    <app-header-layout fullbleed>
+      <app-header>
+        <app-toolbar>
+          <div>MF Chat</div>
+          <paper-menu-button>
+
+          <paper-icon-button icon="menu" class="dropdown-trigger"></paper-icon-button>
+            <paper-menu class="dropdown-content">
+              <a href="/settings"><paper-item>Settings</paper-item></a>
+              <a href="/signout"><paper-item>Log out</paper-item></a>
+              
+            </paper-menu>
+          </paper-menu-button>
+
+        </app-toolbar>
+
+      </app-header>
+      <div class="content">
+        
+      </div>
+    </app-header-layout>
 
 
   </template>
