@@ -63,11 +63,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       data="{{queryResponse}}">
     </firebase-query>
 
+    <firebase-document
+      id="conversationsDocument"
+      app-name="mf-chat"
+      path=""
+      data="{{conversation}}">
+    </firebase-document>
+
 
 
     <app-header>
-      <div class="">
-
+      <div class="horizontal layout">
+        <a href="/home"><paper-icon-button icon="arrow-back"></paper-icon-button></a>
+        <div>
           <iron-selector class="flex horizontal layout wrap" selected-values="{{selectedContacts}}" multi items="[[contacts]]" attr-for-selected="value">
             <template is="dom-repeat" items="[[selectedContacts]]" as="contact">
               <div class="contact-chip horizontal layout" value="[[contact]]">
@@ -79,16 +87,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               </div>
             </template>
           </iron-selector>
-
+          
           <paper-input value="{{searchTerm}}" placeholder="Enter a name..." no-label-float></paper-input>
-
+        </div>
       </div>
-
     </app-header>
+
     <div class="content">
-
-
-
       <iron-selector selected-values="{{selectedContacts}}" multi items="[[contacts]]" attr-for-selected="value" >
         <template is="dom-repeat" items="[[contacts]]" as="contact" filter="_contactFilter">
           <paper-item value="[[contact]]">
@@ -100,15 +105,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </paper-item>
         </template>
       </iron-selector>
-  
     </div>
 
 
-    <a class="footer-button" href="/contacts">
-      <paper-button>
+    <div class="footer-button">
+      <paper-button on-tap="_createConversation">
         Send message
       </paper-button>
-    </a>
+    </div>
 
     
     <!-- [[loading]] -->
@@ -133,12 +137,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       observers:[
         '_queryChanged(searchTerm, user.uid)',
-        '_selectedContactsChanged(selectedContacts.*)'
       ],
-
-      _selectedContactsChanged:function(){
-        console.log(this.selectedContacts)
-      },
 
       _queryChanged:function(query){
         this.loading = true;
@@ -149,16 +148,41 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.set('contacts', [])
           this.set('contacts', this.queryResponse);
         }.bind(this));
-
       },
 
-
-
       _contactFilter:function(item){
-
         return item.uid != this.user.uid && item.name.toLowerCase().includes(this.searchTerm.toLowerCase()) 
-        
+      },
 
+      _createConversation:function(){
+
+        let keys = this.selectedContacts.map(function(item){
+          return item.uid
+        });
+
+        keys.push(this.user.uid);
+        keys.sort();
+ 
+        let conversationId = keys.join('').split('').reduce(function(prevHash, currVal){
+          return ((prevHash << 5) - prevHash) + currVal.charCodeAt(0)
+        }, 0);
+
+
+        console.log('id is', conversationId)
+        
+        var conversation = {
+          messages:[],
+        }
+
+        keys.forEach(function(item){
+          conversation[item] = true;
+        })
+
+        this.set('conversation', conversation);
+
+        this.$.conversationsDocument.save('conversations', conversationId).then(function(response){
+          console.log('created conversation', response);
+        }.bind(this))
       }
 
     });
