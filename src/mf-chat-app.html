@@ -38,7 +38,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 		<iron-pages selected="[[_getSelectedPage(signedIn, statusKnown, routeData.page)]]" attr-for-selected="name" fallback-selection="home">
 			<mf-chat-login user="{{user}}" status-known="{{statusKnown}}" signed-in="{{signedIn}}" name="signout"></mf-chat-login>
-			<mf-chat-home user="{{user}}" status-known="{{statusKnown}}" name="home"></mf-chat-home>
+			<mf-chat-home user="{{user}}" name="home"></mf-chat-home>
+			<mf-chat-contacts user="{{user}}" name="contacts"></mf-chat-contacts>
 		</iron-pages>
 
 		

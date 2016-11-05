@@ -12,7 +12,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <!-- Chat Login auths a user via Google sign in, and creates a record for them if they're a new user -->
 
-<dom-module id="mf-chat-home">
+<dom-module id="mf-chat-contacts">
   <template>
     <style include="shared-styles iron-flex iron-flex-alignment">
       :host {
@@ -23,12 +23,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         border-radius: 0px;
       }
 
-      #footer-button{
-        position: fixed;
-        bottom: 0px;
-        left: 0px;
-        right: 0px;
-      }
+
     </style>
 
 
@@ -56,18 +51,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </app-header-layout>
 
     
-    <a id="footer-button" href="/contacts">
-      <paper-button>
-        New conversation
-      </paper-button>
-    </a>
+
 
 
   </template>
 
   <script>
     Polymer({
-      is: 'mf-chat-home',
+      is: 'mf-chat-contacts',
 
 
     });
