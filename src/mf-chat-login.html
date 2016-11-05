@@ -34,6 +34,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <firebase-auth 
       id="auth"
       app-name="mf-chat"
+      user="{{authData}}"
       on-error="handleError"
       provider="google"
       signed-in="{{signedIn}}"
@@ -86,50 +87,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       },
 
-      // _reset:function(){
-      //   console.log('signed out')
-      //   this.$.userDocument.reset();
-      //   this.set('user', null);
-      //   window.location = '/'
-      // },
-
-      // _authChanged:function(uid){
-      //   if(this.authResponse){
-      //     this._checkIfUserExists(this.authResponse.uid).then(function(response){
-      //       console.log('user exists', response);
-      //       if(!response){
-      //         this._createNewUser();
-      //       }else{
-      //         // window.location = '/home'
-      //       }
-      //     }.bind(this));
-      //   }
-      // },
-
-      // _createNewUser:function(){
-      //   var user = {
-      //     name:this.authResponse.displayName,
-      //     email:this.authResponse.email,
-      //     avatar:this.authResponse.photoURL,
-      //     uid:this.authResponse.uid
-      //   }
-      //   this.set('user', user);
-      //   // window.location = '/home'
-      // },
-
-      
-
-      // _checkIfUserExists:function(userId) {
-      //   var promise =  new Promise(function(resolve, reject){
-      //     var usersRef = this.$.userDocument.ref;
-
-      //     usersRef.once('value', function(snapshot) {
-      //     var exists = (snapshot.val() !== null);
-      //       resolve(exists);
-      //     });
-      //   }.bind(this))
-      //   return promise;
-      // }
     });
   </script>
 </dom-module>

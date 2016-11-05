@@ -22,12 +22,29 @@
       userPath:{
       	type:String,
       	value:null
+      },
+
+      auto:{
+      	type:Boolean,
+      	value: true
       }
+		},
+
+		observers:[
+			'_authDataChanged(authData)'
+		],
+
+		_authDataChanged:function(){
+			
+			if(this.authData && this.auto){
+				console.log('auth data changed', this.authData, this.auto);
+				this.userPath = 'users/'+this.authData.uid;
+			}
 		},
 
 		_signInWithGoogle:function(){
       this.$.auth.signInWithPopup('google').then(function(authResponse){
-
+      	this.auto = false;
       	console.log('logged in via google');
 
       	this._createUserIfNotExists(authResponse.user);
@@ -37,6 +54,7 @@
 
     _signInWithEmail:function(){
       this.$.auth.signInWithEmailAndPassword(this.email, this.password).then(function(authResponse){
+      	this.auto = false;
       	console.log('logged in via email', authResponse);
 
       	this._createUserIfNotExists(authResponse);
@@ -47,16 +65,23 @@
     _signOut:function(){
     	this.$.auth.signOut().then(function(){
     		console.log('signed out');
-    		this.$.userDocument.reset();
-    		this.set('user', '')
+    		this.userPath = ''
+
+    		// this.$.userDocument.reset();
+    		this.async(function(){
+					this.set('user', '');
+	    		this.auto = true;
+    		}, 1)
+    		
     	}.bind(this));
     	
     },
 
     _createNewUser:function(){
       this.$.auth.createUserWithEmailAndPassword(this.email, this.password).then(function(authResponse){
-        
-        authResponse.displayName = this.username;
+        console.log('creating user', this.username);
+        this.auto = false;
+        // authResponse.displayName = this.username;
         this._createUserIfNotExists(authResponse);  
 
       }.bind(this)); 
@@ -64,12 +89,15 @@
 
     _checkIfUserExists:function(userId) {
       var promise =  new Promise(function(resolve, reject){
-        var usersRef = this.$.userDocument.ref;
-        console.log(usersRef, userId)
-        usersRef.once('value', function(snapshot) {
-        var exists = (snapshot.val() !== null);
-          resolve(exists);
-        });
+      	this.async(function(){
+      		var usersRef = this.$.userDocument.ref;
+	        console.log(usersRef, userId)
+	        usersRef.once('value', function(snapshot) {
+	        var exists = (snapshot.val() !== null);
+	          resolve(exists);
+	        });
+      	},1)
+        
       }.bind(this))
       return promise;
     },
@@ -80,10 +108,14 @@
     	this._checkIfUserExists(authResponse.uid).then(function(userExists){
     		console.log('user exists', userExists);
     		
-    		console.log('user is', this.user, authResponse)
+    		console.log('user is', this.user, authResponse, this.username)
+    		
+
     		if(!userExists){
-    			var user = {
-	          name:authResponse.displayName ? authResponse.displayName : this.username,
+    			let username = this.username ? this.username : '';
+
+    			let user = {
+	          name:authResponse.displayName ? authResponse.displayName : username,
 	          email:authResponse.email,
 	          avatar:authResponse.photoURL,
 	          uid:authResponse.uid
@@ -92,8 +124,11 @@
 
 
 	        this.$.userDocument.save('users', authResponse.uid).then(function(){
-	        	console.log('user created')
-	        })
+	        	console.log('user created');
+	        	if(this.isSignup){
+	        		this.$.userDocument.reset();
+	        	}
+	        }.bind(this))
     		}
 
     	}.bind(this))

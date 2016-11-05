@@ -60,6 +60,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 			_userChanged:function(){
 				console.log('user changed', this.user);
+				if(this.user.hasOwnProperty('uid') && (this.routeData.page == 'login' || this.routeData.page == 'signup' || !this.routeData.page)){
+					this.set('route.path', 'home')
+				}
 			},
 
 			_getFallbackPage:function(signedIn, statusKnown){
