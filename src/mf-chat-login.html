@@ -1,0 +1,146 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<!-- Chat Login auths a user via Google sign in, and creates a record for them if they're a new user -->
+
+<dom-module id="mf-chat-login">
+  <template>
+    <style include="shared-styles iron-flex iron-flex-alignment">
+      :host {
+        display: block;
+      }
+
+      paper-button{
+        border-radius: 0px;
+      }
+    </style>
+
+    <app-location route="{{route}}"></app-location>
+    <app-route
+      active="{{signout}}"
+      route="{{route}}"
+      pattern="/signout"></app-route>
+
+    <firebase-auth 
+      id="auth"
+      app-name="mf-chat"
+      user="{{authResponse}}"
+      on-error="handleError"
+      provider="google"
+      signed-in="{{signedIn}}"
+      status-known="{{statusKnown}}">
+    </firebase-auth>
+
+    <firebase-document
+      id="userDocument"
+      app-name="mf-chat"
+      path="users/[[authResponse.uid]]"
+      data="{{user}}">
+    </firebase-document>
+
+    <div>
+      <paper-button  on-tap="_signInWithGoogle">Sign in with Google</paper-button>
+    </div>
+
+    [[active]]
+    
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'mf-chat-login',
+
+      properties:{
+        user:{
+          type:Object,
+          notify: true
+        },
+
+        authResponse:{
+          type:Object,
+          value:null
+        },
+
+        statusKnown:{
+          type:Boolean,
+          value:null,
+          notify: true
+        },
+
+        signedIn:{
+          type:Boolean,
+          value:null,
+          notify:true
+        }
+      },
+
+      observers:[
+        '_authChanged(authResponse.uid)',
+        '_signoutChanged(signout)'
+      ],
+
+      _signoutChanged:function(){
+        if(this.signout){
+          this.$.auth.signOut().then(this._reset());
+        }
+      },
+
+      _reset:function(){
+        console.log('signed out')
+        this.$.userDocument.reset();
+        this.set('user', null);
+      },
+
+      _authChanged:function(uid){
+        if(this.authResponse){
+          this._checkIfUserExists(this.authResponse.uid).then(function(response){
+            console.log('user exists', response);
+            if(!response){
+              this._createNewUser();
+            }else{
+              // window.location = '/home'
+            }
+          }.bind(this));
+        }
+      },
+
+      _createNewUser:function(){
+        var user = {
+          name:this.authResponse.displayName,
+          email:this.authResponse.email,
+          avatar:this.authResponse.photoURL,
+          uid:this.authResponse.uid
+        }
+        this.set('user', user);
+        // window.location = '/home'
+      },
+
+      _signInWithGoogle:function(){
+        this.$.auth.signInWithPopup('google');
+      },
+
+      _checkIfUserExists:function(userId) {
+        var promise =  new Promise(function(resolve, reject){
+          var usersRef = this.$.userDocument.ref;
+
+          usersRef.once('value', function(snapshot) {
+          var exists = (snapshot.val() !== null);
+            resolve(exists);
+          });
+        }.bind(this))
+        return promise;
+      }
+    });
+  </script>
+</dom-module>
+
