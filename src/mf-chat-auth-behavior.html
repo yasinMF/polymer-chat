@@ -1,0 +1,103 @@
+<script type="text/javascript">
+	
+	MfChatAuthBehavior = {
+		properties:{
+			user:{
+				type:Object,
+				notify:true
+			},
+
+		  statusKnown:{
+        type:Boolean,
+        value:null,
+        notify: true
+      },
+
+      signedIn:{
+        type:Boolean,
+        value:null,
+        notify:true
+      },
+
+      userPath:{
+      	type:String,
+      	value:null
+      }
+		},
+
+		_signInWithGoogle:function(){
+      this.$.auth.signInWithPopup('google').then(function(authResponse){
+
+      	console.log('logged in via google');
+
+      	this._createUserIfNotExists(authResponse.user);
+
+      }.bind(this));
+    },
+
+    _signInWithEmail:function(){
+      this.$.auth.signInWithEmailAndPassword(this.email, this.password).then(function(authResponse){
+      	console.log('logged in via email', authResponse);
+
+      	this._createUserIfNotExists(authResponse);
+
+      }.bind(this));
+    },
+
+    _signOut:function(){
+    	this.$.auth.signOut().then(function(){
+    		console.log('signed out');
+    		this.$.userDocument.reset();
+    		this.set('user', '')
+    	}.bind(this));
+    	
+    },
+
+    _createNewUser:function(){
+      this.$.auth.createUserWithEmailAndPassword(this.email, this.password).then(function(authResponse){
+        
+        authResponse.displayName = this.username;
+        this._createUserIfNotExists(authResponse);  
+
+      }.bind(this)); 
+    },
+
+    _checkIfUserExists:function(userId) {
+      var promise =  new Promise(function(resolve, reject){
+        var usersRef = this.$.userDocument.ref;
+        console.log(usersRef, userId)
+        usersRef.once('value', function(snapshot) {
+        var exists = (snapshot.val() !== null);
+          resolve(exists);
+        });
+      }.bind(this))
+      return promise;
+    },
+
+    _createUserIfNotExists:function(authResponse){
+    	console.log(authResponse)
+    	this.userPath = 'users/'+authResponse.uid
+    	this._checkIfUserExists(authResponse.uid).then(function(userExists){
+    		console.log('user exists', userExists);
+    		
+    		console.log('user is', this.user, authResponse)
+    		if(!userExists){
+    			var user = {
+	          name:authResponse.displayName ? authResponse.displayName : this.username,
+	          email:authResponse.email,
+	          avatar:authResponse.photoURL,
+	          uid:authResponse.uid
+	        }
+	        this.set('user', user);
+
+
+	        this.$.userDocument.save('users', authResponse.uid).then(function(){
+	        	console.log('user created')
+	        })
+    		}
+
+    	}.bind(this))
+    }
+	}
+
+</script>
