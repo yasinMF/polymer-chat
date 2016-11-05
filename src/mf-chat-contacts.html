@@ -23,7 +23,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         border-radius: 0px;
       }
 
+      paper-item{
+        --paper-item-focused-before:{
+          display: none;
+        };
+      }
 
+      paper-input{
+        width: 100%;
+      }
+      .contact-chip{
+        background-color: rgba(0,0,0,0.12);
+        padding: 4px;
+      }
     </style>
 
 
@@ -32,27 +44,52 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       app-name="mf-chat"
       path="users"
       order-by-child="name"
-      start-at="[[searchTerm]]"
       data="{{queryResponse}}">
     </firebase-query>
 
 
     <app-header-layout fullbleed>
       <app-header>
-        <app-toolbar>
-          <paper-input value="{{searchTerm}}"></paper-input>
-        </app-toolbars>
+        <div class="horizontal layout">
+
+          <div class="flex horizontal layout wrap">
+
+            <template is="dom-repeat" items="[[selectedContacts]]" as="contact">
+              <div class="contact-chip horizontal layout">
+                [[contact.name]]
+              </div>
+            </template>
+
+            <paper-input value="{{searchTerm}}" placeholder="Enter a name..." no-label-float></paper-input>
+
+          </div>
+        </div>
 
       </app-header>
       <div class="content">
 
-        <template is="dom-repeat" items="[[contacts]]" as="contact" filter="_contactFilter">
-          <p>[[contact.name]]</p>
-          <p>[[contact.email]]</p>
-        </template>
+
+
+        <iron-selector selected-values="{{selectedContacts}}" multi items="[[contacts]]" attr-for-selected="value" >
+          <template is="dom-repeat" items="[[contacts]]" as="contact" filter="_contactFilter">
+            <paper-item value="[[contact]]">
+              <paper-item-body two-line>
+                <div>[[contact.name]]</div>
+                <div secondary>[[contact.email]]</div>
+              </paper-item-body>
+              <!-- <iron-icon icon="warning"></iron-icon> -->
+            </paper-item>
+          </template>
+        </iron-selector>
     
       </div>
     </app-header-layout>
+
+    <a class="footer-button" href="/contacts">
+      <paper-button>
+        Send message
+      </paper-button>
+    </a>
 
     
     <!-- [[loading]] -->
@@ -76,12 +113,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       observers:[
-        '_queryChanged(searchTerm)',
-        
+        '_queryChanged(searchTerm, user.uid)',
+        '_selectedContactsChanged(selectedContacts.*)'
       ],
 
-      _transactionsComplete:function(){
-        console.log('done')
+      _selectedContactsChanged:function(){
+        console.log(this.selectedContacts)
       },
 
       _queryChanged:function(query){
@@ -90,19 +127,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         ref.once('value', function(snapshot) {
           console.log('complete')
           this.loading = false;
-          this.set('contacts', this.queryResponse)
+          this.set('contacts', [])
+          this.set('contacts', this.queryResponse);
         }.bind(this));
 
       },
 
 
-      _updateResponse:function(){
-
-      },
 
       _contactFilter:function(item){
 
-        return item.uid != this.user.uid;
+        return item.uid != this.user.uid && item.name.toLowerCase().includes(this.searchTerm.toLowerCase()) 
         
 
       }

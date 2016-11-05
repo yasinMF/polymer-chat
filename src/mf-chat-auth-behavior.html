@@ -34,6 +34,12 @@
 			'_authDataChanged(authData)'
 		],
 
+		_handleError:function(e, d){
+			console.log('error', e, d);
+			this.message = d.message;
+			this.$.toast.open();
+		},
+
 		_authDataChanged:function(){
 			
 			if(this.authData && this.auto){
@@ -65,10 +71,9 @@
     _signOut:function(){
     	this.$.auth.signOut().then(function(){
     		console.log('signed out');
-    		this.userPath = ''
 
-    		// this.$.userDocument.reset();
     		this.async(function(){
+          this.$.userDocument.reset();
 					this.set('user', '');
 	    		this.auto = true;
     		}, 1)
@@ -89,14 +94,14 @@
 
     _checkIfUserExists:function(userId) {
       var promise =  new Promise(function(resolve, reject){
-      	this.async(function(){
-      		var usersRef = this.$.userDocument.ref;
-	        console.log(usersRef, userId)
-	        usersRef.once('value', function(snapshot) {
-	        var exists = (snapshot.val() !== null);
-	          resolve(exists);
-	        });
-      	},1)
+      	
+    		var usersRef = this.$.userDocument.ref;
+        console.log(usersRef, userId)
+        usersRef.once('value', function(snapshot) {
+        var exists = (snapshot.val() !== null);
+          resolve(exists);
+        });
+      	
         
       }.bind(this))
       return promise;

@@ -19,16 +19,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         display: block;
       }
 
-      paper-button{
-        border-radius: 0px;
-      }
     </style>
 
 
     <firebase-auth 
       id="auth"
       app-name="mf-chat"
-      on-error="handleError"
+      on-error="_handleError"
       provider="google"
       signed-in="{{signedIn}}"
       status-known="{{statusKnown}}">
@@ -42,21 +39,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </firebase-document>
 
 
-    <div>
-      <paper-button  on-tap="_signInWithGoogle">Sign up with Google</paper-button>
-    </div>
 
 
-    <div>
-      <paper-input label="Email" value="{{email}}"></paper-input>
-      <paper-input label="Password" value="{{password}}" type="password"></paper-input>
-      <paper-input label="Name" value="{{username}}"></paper-input>
-      <paper-button  on-tap="_createNewUser">Create account</paper-button>
-    </div>
-
-    <p>Already have an account? <a href="/login">Log in</a></p>
-
-    [[active]]
+    <paper-toast id="toast" text="[[message]]"></paper-toast>
     
 
   </template>

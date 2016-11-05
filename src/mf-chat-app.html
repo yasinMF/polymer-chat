@@ -36,17 +36,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 			api-key="AIzaSyDhe3nJPYEnjtGhMQmMNTFWbGSxMcqfIqM">
 		</firebase-app>
 
-
-		<iron-pages selected="[[routeData.page]]" attr-for-selected="name" fallback-selection="[[_getFallbackPage(signedIn, statusKnown)]]">
+		<iron-pages class="fullbleed" selected="[[_getCurrentPage(signedIn, statusKnown, routeData.page)]]" attr-for-selected="name" fallback-selection="[[_getFallbackPage(signedIn, statusKnown)]]">
 			<mf-chat-login user="{{user}}" status-known="{{statusKnown}}" signed-in="{{signedIn}}" name="login"></mf-chat-login>
-			<mf-chat-signup user="{{user}}" status-known="{{statusKnown}}" signed-in="{{signedIn}}" name="signup"></mf-chat-signup>
 			<mf-chat-home user="{{user}}" name="home"></mf-chat-home>
+			<mf-chat-contacts user="{{user}}" name="contacts"></mf-chat-contacts>
 		</iron-pages>
-
-		
-
-
-
 
 	</template>
 
@@ -55,18 +49,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 			is: 'mf-chat-app',
 
 			observers:[
-				'_userChanged(user)'
+				'_userChanged(user, signedIn, statusKnown)'
 			],
 
-			_userChanged:function(){
+			_userChanged:function(user, signedIn, statusKnown){
 				console.log('user changed', this.user);
-				if(this.user.hasOwnProperty('uid') && (this.routeData.page == 'login' || this.routeData.page == 'signup' || !this.routeData.page)){
+				if(user.hasOwnProperty('uid') && (this.routeData.page == 'login' || !this.routeData.page)){
 					this.set('route.path', 'home')
 				}
 			},
 
 			_getFallbackPage:function(signedIn, statusKnown){
 				return this._shouldShowLogin(signedIn, statusKnown) ? 'login' : 'home';
+			},
+
+			_getCurrentPage:function(signedIn, statusKnown, page){
+				return this._shouldShowLogin(signedIn, statusKnown) ? 'login' : page;
 			},
 
 			_shouldShowLogin:function(signedIn, statusKnown){
