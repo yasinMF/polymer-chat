@@ -1,3 +1,5 @@
+
+
 <script type="text/javascript">
 	MfChatUtilityBehavior = {
 		
@@ -23,8 +25,19 @@
 
 		_getLastMessage:function(messages){
 			return messages[messages.length-1].content
-		}
+		},
 
+		_getConversationIcon:function(){
+			
+		},
+
+		_getFriendlyTime:function(time){
+			// return moment(time, 'YYYYMMDD').fromNow();
+		},
+
+		_getLastUpdated:function(messages){
+			return new Date(messages[messages.length-1].timestamp).toISOString()
+		},
 
 	}
 </script>

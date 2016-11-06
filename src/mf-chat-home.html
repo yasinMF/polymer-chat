@@ -33,6 +33,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         width: 200px;
       }
 
+      app-toolbar paper-menu-button{
+        padding: 0px;
+      }
+
 
     </style>
 
@@ -49,10 +53,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <app-header-layout fullbleed has-scrolling-region>
       <app-header>
         <app-toolbar>
-          <div main-title>[[user.name]]</div>
+          <div main-title>
+            <h1 class="title">MF Chat</h1>
+          </div>
           <paper-menu-button horizontal-align="right">
 
-          <paper-icon-button icon="more-vert" class="dropdown-trigger"></paper-icon-button>
+          <paper-icon-button icon="more-horiz" class="dropdown-trigger"></paper-icon-button>
             <paper-menu class="dropdown-content">
               <a href="/settings"><paper-item>Settings</paper-item></a>
               <a href="/login"><paper-item>Log out</paper-item></a>

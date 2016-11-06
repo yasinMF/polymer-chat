@@ -18,19 +18,68 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       :host {
         display: block;
         position: relative;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+        
       }
 
+      iron-image{
+        background-color: #efefef;
+        width:48px;
+        height: 48px;
+        border-radius: 50%;
+        margin-right: 1rem;
+      }
 
+      .list-item{
+        border-top: 1px solid rgba(0,0,0,0.12);
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+      }
+
+      p{
+        margin: 0px;
+        line-height: 1rem;
+      }
+
+      .secondary{
+        margin-top: 0.25rem;
+      }
+
+      .secondary p{
+        font-size: 0.75rem;
+        line-height: 1rem;
+        color: rgba(0,0,0,0.54);
+      }
 
     </style>
 
     <a href="/conversation/[[conversation.$key]]">
-      <paper-item>
+
+      <div class="horizontal layout list-item center">
+        <iron-image src="" width="48" height="48" sizing="contain"></iron-image>
+        <div class="flex">
+          <p>[[_getConversationName(conversation.members, userId)]]</p>
+          <div class="horizontal layout secondary">
+            <p class="flex">[[_getLastMessage(conversation.messages)]]</p>
+            <p><moment-js date="[[_getLastUpdated(conversation.messages)]]" date-format="HH:mm" to-now=""></moment-js></p>
+          </div>
+        </div>
+        
+      </div>
+<!--       <paper-item>
+
+        <template is="dom-if" if="[[_isEqual(conversation.members.length, 2)]]">
+          
+        </template>
+        
+        
+
         <paper-item-body two-line>
           <div>[[_getConversationName(conversation.members, userId)]]</div>
           <div secondary>[[_getLastMessage(conversation.messages)]]</div>
         </paper-item-body>
-      </paper-item>
+      </paper-item> -->
     </a>
 
   </template>
@@ -42,6 +91,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
       behaviors:[MfChatUtilityBehavior],
+
 
       
 
