@@ -17,17 +17,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <style include="shared-styles iron-flex iron-flex-alignment">
       :host {
         display: block;
+        position: relative;
+        background-color: red;
       }
 
-      paper-button{
-        border-radius: 0px;
-      }
-
-
-
-      paper-menu{
-        width: 200px;
-      }
     </style>
 
 
@@ -35,30 +28,49 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <app-location route="{{route}}"></app-location>
     <app-route
       route="{{route}}"
-      pattern="/:page"
+      pattern="/conversation/:conversationId"
       data="{{routeData}}"
-      tail="{{subroute}}"></app-route>
+      ></app-route>
 
-    <app-header>
-      <app-toolbar>
-        <div main-title></div>
-        <paper-menu-button horizontal-align="right">
+    <firebase-document
+      id="conversationDocument"
+      app-name="mf-chat"
+      path="conversations/[[routeData.conversationId]]"
+      data="{{conversation}}">
+    </firebase-document>
 
-        <paper-icon-button icon="more-vert" class="dropdown-trigger"></paper-icon-button>
-          <paper-menu class="dropdown-content">
-            <a href="/settings"><paper-item>Settings</paper-item></a>
-            <a href="/login"><paper-item>Log out</paper-item></a>
-          </paper-menu>
-        </paper-menu-button>
 
-      </app-toolbar>
 
-    </app-header>
-    <div class="content">
+    <app-header-layout fullbleed has-scrolling-region>
+      <app-header>
+        <app-toolbar>
+
+          <a href="/home"><paper-icon-button icon="arrow-back"></paper-icon-button></a>
+          <div main-title>[[_getConversationName(conversation.members, user.uid)]]</div>
+
+        </app-toolbar>
+
+      </app-header>
+      <div class="content">
+        
+      <template is="dom-repeat" items="[[conversation.messages]]" as="message">
+        <template is="dom-if" if="[[_isEqual(message.type, 'annotation')]]">
+          <p class="annotation">[[message.content]]</p>
+        </template>
+
+        <template is="dom-if" if="[[_isEqual(message.type, 'text')]]">
+          <p class="text">[[message.content]]</p>
+        </template>
+
+
+      </template>
       
-    
-    </div>
+      </div>
+    </app-header-layout>
 
+    <div class="footer-button" id="message-control">
+      <paper-textarea id="messageInput" placeholder="Message..." class="flex" value="{{userMessage}}" on-keydown="_onKeydown" no-label-float></paper-textarea>
+    </div>
 
   </template>
 
@@ -67,6 +79,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       is: 'mf-chat-conversation',
 
       behaviors:[MfChatUtilityBehavior],
+
+      _onKeydown:function(e){
+        if(!e.shiftKey && e.code == "Enter"){
+          e.preventDefault();
+          e.stopPropagation();
+          this._sendTextMessage();
+        }
+      },
+
+      _sendTextMessage:function(){
+        let message = {
+          type:'text',
+          content:this.userMessage,
+          user:this.user,
+          timestamp:Date.now()
+        }
+
+        this.push('conversation.messages', message);
+        this.userMessage = null;
+      }
 
 
     });

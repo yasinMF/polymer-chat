@@ -1,11 +1,30 @@
 <script type="text/javascript">
 	MfChatUtilityBehavior = {
+		
+		properties:{
+			firebaseQueryLoading:{
+				type: Boolean,
+				value: true
+			}
+		},
 
 		_getConversationName:function(members, userId){
 			var l = members.length-1;
-			return members.reduce(function(prevValue, currentValue, index, arr){
-				return currentValue.uid == userId ? prevValue : prevValue + currentValue.name + (index == l ? '': ', ');
+
+			let name =  members.reduce(function(prevValue, currentValue, index, arr){
+				return currentValue.uid == userId ? prevValue : prevValue + currentValue.name +', ';
 			}, '')
+			return name.substring(0, name.length - 2);
+		},
+
+		_isEqual:function(a, b){
+			return a == b;
+		},
+
+		_getLastMessage:function(messages){
+			return messages[messages.length-1].content
 		}
+
+
 	}
 </script>

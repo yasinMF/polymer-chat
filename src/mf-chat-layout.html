@@ -1,0 +1,89 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<!-- Chat Login auths a user via Google sign in, and creates a record for them if they're a new user -->
+
+<dom-module id="mf-chat-layout">
+  <template>
+    <style include="shared-styles iron-flex iron-flex-alignment">
+      :host {
+        display: block;
+      }
+
+      .siderbar{
+        width: 100%;
+      }
+
+      .sidebar[narrow]{
+        max-width: 320px;
+      }
+
+
+
+    </style>
+
+    <app-location route="{{route}}"></app-location>
+    <app-route
+      route="{{route}}"
+      pattern="/:page"
+      data="{{routeData}}"
+      tail="{{subroute}}"></app-route>
+
+    <iron-media-query query="(min-width: 800px)" query-matches="{{wideLayout}}"></iron-media-query>
+
+    <div class="fullbleed horizontal layout">
+
+      <div class="flex sidebar vertical layout" narrow$="[[wideLayout]]">
+        <iron-pages class="flex vertical layout stretch" selected="[[routeData.page]]" attr-for-selected="name" fallback-selection="home">
+          <mf-chat-home class="flex" user="{{user}}" name="home"></mf-chat-home>
+          <mf-chat-contacts class="flex" user="{{user}}" name="contacts"></mf-chat-contacts>
+
+          <template is="dom-if" if="[[!wideLayout]]" restamp>
+            <mf-chat-conversation class="flex" user="{{user}}" name="conversation"></mf-chat-conversation>
+          </template>
+        </iron-pages>
+      </div>
+
+      <template is="dom-if" if="[[wideLayout]]" restamp>
+        <div class="flex vertical layout">
+          <mf-chat-conversation class="flex" user="{{user}}" name="conversation"></mf-chat-conversation>
+        </div>
+      </template>
+
+    </div>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'mf-chat-layout',
+
+
+
+      behaviors:[MfChatUtilityBehavior],
+
+      observers:[
+        '_layoutChanged(wideLayout)'
+      ],
+
+      _layoutChanged:function(){
+        this.set('route.path', '/home')
+      }
+
+
+      
+
+
+    });
+  </script>
+</dom-module>
+

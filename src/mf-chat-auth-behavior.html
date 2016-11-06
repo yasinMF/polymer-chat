@@ -2,10 +2,10 @@
 	
 	MfChatAuthBehavior = {
 		properties:{
-			user:{
-				type:Object,
-				notify:true
-			},
+      user:{
+        type:Object,
+        notify:true
+      },
 
 		  statusKnown:{
         type:Boolean,
@@ -18,21 +18,12 @@
         value:null,
         notify:true
       },
-
-      userPath:{
-      	type:String,
-      	value:null
-      },
-
-      auto:{
-      	type:Boolean,
-      	value: true
-      }
 		},
 
 		observers:[
-			'_authDataChanged(authData)'
+			'_authDataChanged(authData)',
 		],
+
 
 		_handleError:function(e, d){
 			console.log('error', e, d);
@@ -41,17 +32,16 @@
 		},
 
 		_authDataChanged:function(){
-			console.log('auth data changed', this.authData, this.auto);
-			if(this.authData && this.auto){
-				
-				this.userPath = 'users/'+this.authData.uid;
-			}
+			
+			if(this.authData){
+				this._createUserIfNotExists(this.authData); 
+			}  
 		},
 
 		_signInWithGoogle:function(){
       this.$.auth.signInWithPopup('google').then(function(authResponse){
-      	this.auto = false;
-      	console.log('logged in via google');
+
+      	console.log('logged in via google', authResponse);
 
       	this._createUserIfNotExists(authResponse.user);
 
@@ -60,7 +50,6 @@
 
     _signInWithEmail:function(){
       this.$.auth.signInWithEmailAndPassword(this.email, this.password).then(function(authResponse){
-      	this.auto = false;
       	console.log('logged in via email', authResponse);
 
       	this._createUserIfNotExists(authResponse);
@@ -71,12 +60,11 @@
     _signOut:function(){
     	this.$.auth.signOut().then(function(){
     		console.log('signed out');
+        this.userPath = null;
+        this.$.userDocument.reset();
+        this.set('user', null);
 
-    	// 	this.async(function(){
-     //      this.$.userDocument.reset();
-					// this.set('user', '');
-	    // 		this.auto = true;
-    	// 	}, 1)
+        console.log(this.$.userDocument)
     		
     	}.bind(this));
     	
@@ -92,35 +80,30 @@
       }.bind(this)); 
     },
 
-    _checkIfUserExists:function(userId) {
+    _checkIfUserExists:function() {
       var promise =  new Promise(function(resolve, reject){
-      	
-    		var usersRef = this.$.userDocument.ref;
-        console.log(usersRef, userId)
-        usersRef.once('value', function(snapshot) {
-        var exists = (snapshot.val() !== null);
-          resolve(exists);
-        });
-      	
-        
-      }.bind(this))
-      return promise;
+          
+          let ref = this.$.userDocument.ref;
+          ref.once('value', function(snapshot) {
+          let exists = (snapshot.val() !== null);
+            resolve(exists);
+          });
+        }.bind(this))
+        return promise;
     },
 
     _createUserIfNotExists:function(authResponse){
-    	console.log(authResponse)
-    	this.userPath = 'users/'+authResponse.uid
-    	this._checkIfUserExists(authResponse.uid).then(function(userExists){
-    		console.log('user exists', userExists);
-    		
-    		console.log('user is', this.user, authResponse, this.username)
-    		
+
+    	this.userPath = 'users/'+authResponse.uid;
+      
+    	this._checkIfUserExists().then(function(userExists){
 
     		if(!userExists){
     			let username = this.username ? this.username : '';
-
+          let name = authResponse.displayName ? authResponse.displayName : username
     			let user = {
-	          name:authResponse.displayName ? authResponse.displayName : username,
+	          name:name,
+            lowercaseName:name.toLowerCase(),
 	          email:authResponse.email,
 	          avatar:authResponse.photoURL,
 	          uid:authResponse.uid

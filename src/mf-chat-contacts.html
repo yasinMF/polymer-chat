@@ -17,6 +17,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <style include="shared-styles iron-flex iron-flex-alignment">
       :host {
         display: block;
+        position: relative;
       }
 
       paper-button{
@@ -54,13 +55,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
 
+    <app-location route="{{route}}"></app-location>
 
-    <firebase-query
-      id="searchQuery"
+    <mf-chat-firebase-query
       app-name="mf-chat"
-      order-by-child="name"
-      data="{{queryResponse}}">
-    </firebase-query>
+      path="[[queryPath]]"
+      start-at="[[searchTerm]]"
+      limit-to-first="20"
+      order-by-child="lowercaseName"
+      data="{{contacts}}">
+    </mf-chat-firebase-query>
 
     <firebase-document
       id="conversationsDocument"
@@ -70,40 +74,41 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </firebase-document>
 
 
+    <app-header-layout fullbleed has-scrolling-region>
+      <app-header>
+        <div class="horizontal layout">
+          <a href="/home"><paper-icon-button icon="arrow-back"></paper-icon-button></a>
+          <div>
+            <iron-selector class="flex horizontal layout wrap" selected-values="{{selectedContacts}}" multi items="[[contacts]]" attr-for-selected="value">
+              <template is="dom-repeat" items="[[selectedContacts]]" as="contact">
+                <div class="contact-chip horizontal layout" value="[[contact]]">
+                  <span>
+                    [[contact.name]]
+                  </span>
+                  <iron-icon icon="close"></iron-icon>
 
-    <app-header>
-      <div class="horizontal layout">
-        <a href="/home"><paper-icon-button icon="arrow-back"></paper-icon-button></a>
-        <div>
-          <iron-selector class="flex horizontal layout wrap" selected-values="{{selectedContacts}}" multi items="[[contacts]]" attr-for-selected="value">
-            <template is="dom-repeat" items="[[selectedContacts]]" as="contact">
-              <div class="contact-chip horizontal layout" value="[[contact]]">
-                <span>
-                  [[contact.name]]
-                </span>
-                <iron-icon icon="close"></iron-icon>
-
-              </div>
-            </template>
-          </iron-selector>
-          
-          <paper-input value="{{searchTerm}}" placeholder="Enter a name..." no-label-float></paper-input>
+                </div>
+              </template>
+            </iron-selector>
+            
+            <paper-input value="{{searchTerm}}" placeholder="Enter a name..." no-label-float></paper-input>
+          </div>
         </div>
-      </div>
-    </app-header>
+      </app-header>
 
-    <div class="content">
-      <iron-selector selected-values="{{selectedContacts}}" multi items="[[contacts]]" attr-for-selected="value" >
-        <template id="contactList" is="dom-repeat" items="[[contacts]]" as="contact" filter="_contactFilter">
-          <paper-item value="[[contact]]">
-            <paper-item-body two-line>
-              <div>[[contact.name]]</div>
-              <div secondary>[[contact.email]]</div>
-            </paper-item-body>
-          </paper-item>
-        </template>
-      </iron-selector>
-    </div>
+      <div class="content">
+        <iron-selector selected-values="{{selectedContacts}}" multi items="[[contacts]]" attr-for-selected="value" >
+          <template id="contactList" is="dom-repeat" items="[[contacts]]" as="contact" filter="_contactFilter">
+            <paper-item value="[[contact]]">
+              <paper-item-body two-line>
+                <div>[[contact.name]]</div>
+                <div secondary>[[contact.email]]</div>
+              </paper-item-body>
+            </paper-item>
+          </template>
+        </iron-selector>
+      </div>
+    </app-header-layout>
 
 
     <div class="footer-button">
@@ -133,31 +138,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       },
 
-      observers:[
-        '_queryChanged(searchTerm, user.uid)',
-      ],
+      attributeChanged: function(name, type) {
 
-      _queryChanged:function(query){
-        console.log('query changed')
-
-      
-        this.async(function(){
-          this.$.searchQuery.reset();
-          this.$.searchQuery.path = 'users';
-
-          this.loading = true;
-          let ref = this.$.searchQuery.ref;
-          ref.once('value', function(snapshot) {
-            
-            this.loading = false;
-            this.set('contacts', [])
-            this.set('contacts', this.queryResponse);
-            console.log('complete', this.contacts, this.queryResponse)
-
-            this.$.contactList.render();
-          }.bind(this));
-
-        })
+        if(this.getAttribute(name).includes('iron-selected')){
+          this.searchTerm = '';
+          this.queryPath = 'users';
+          this.$.contactList.render();
+        }
       },
 
       _contactFilter:function(item){
@@ -165,6 +152,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       _createConversationIfNotExists:function(){
+
+        this.$.conversationsDocument.reset();
 
         var members = [this.user].concat(this.selectedContacts);
         
@@ -179,7 +168,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this._checkIfConversationExists().then(function(conversationExists){
           console.log('conversation exists', conversationExists);
           if(conversationExists){
-            // window.location = '/conversation/'+conversationId
+            this.set('route.path', '/conversation/'+conversationId)
           }else{
             
 
@@ -203,13 +192,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               conversation.userAccess[item] = true;
             })
 
-            console.log('creating conversation', conversation, conversationId)
+            console.log('creating conversation', conversation, conversationId);
 
             this.set('conversation', conversation);
+
             this.$.conversationsDocument.save('conversations', conversationId).then(function(response){
               console.log('created conversation');
-              // this.$.conversationsDocument.reset();
-              // window.location = '/conversation/'+conversationId
+              this.set('route.path', '/conversation/'+conversationId)
             }.bind(this))
 
           } 

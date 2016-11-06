@@ -17,58 +17,60 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <style include="shared-styles iron-flex iron-flex-alignment">
       :host {
         display: block;
+        position: relative;
       }
 
       paper-button{
         border-radius: 0px;
       }
 
-
+      app-header{
+        position: relative;
+        z-index: 1;
+      }
 
       paper-menu{
         width: 200px;
       }
+
+
     </style>
 
 
-    <firebase-query
+    <mf-chat-firebase-query
       id="searchQuery"
       app-name="mf-chat"
       path="conversations"
       order-by-child="userAccess/[[user.uid]]"
       equal-to="true"
       data="{{conversations}}">
-    </firebase-query>
+    </mf-chat-firebase-query>
 
-    <app-header>
-      <app-toolbar>
-        <div main-title>MF Chat</div>
-        <paper-menu-button horizontal-align="right">
+    <app-header-layout fullbleed has-scrolling-region>
+      <app-header>
+        <app-toolbar>
+          <div main-title>[[user.name]]</div>
+          <paper-menu-button horizontal-align="right">
 
-        <paper-icon-button icon="more-vert" class="dropdown-trigger"></paper-icon-button>
-          <paper-menu class="dropdown-content">
-            <a href="/settings"><paper-item>Settings</paper-item></a>
-            <a href="/login"><paper-item>Log out</paper-item></a>
-          </paper-menu>
-        </paper-menu-button>
+          <paper-icon-button icon="more-vert" class="dropdown-trigger"></paper-icon-button>
+            <paper-menu class="dropdown-content">
+              <a href="/settings"><paper-item>Settings</paper-item></a>
+              <a href="/login"><paper-item>Log out</paper-item></a>
+            </paper-menu>
+          </paper-menu-button>
 
-      </app-toolbar>
+        </app-toolbar>
 
-    </app-header>
-    <div class="content">
+      </app-header>
 
-      <template is="dom-repeat" items="[[conversations]]" as="conversation">
-        <a href="/conversation/[[conversation.$key]]">
-          <paper-item value="[[contact]]">
-            <paper-item-body two-line>
-              <div>[[_getConversationName(conversation.members, user.uid)]]</div>
-              <div secondary>Last Message</div>
-            </paper-item-body>
-          </paper-item>
-        </a>
-      </template>
-  
-    </div>
+      <div class="content">
+
+        <template is="dom-repeat" items="[[conversations]]" as="conversation">
+          <mf-chat-list-item conversation="[[conversation]]" user-id="[[user.uid]]"></mf-chat-list-item>
+        </template>
+    
+      </div>
+    </app-header-layout>
 
 
     
@@ -85,7 +87,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     Polymer({
       is: 'mf-chat-home',
 
+
+
       behaviors:[MfChatUtilityBehavior],
+
+      
 
 
     });
