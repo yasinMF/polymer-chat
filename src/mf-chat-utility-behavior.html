@@ -1,0 +1,11 @@
+<script type="text/javascript">
+	MfChatUtilityBehavior = {
+
+		_getConversationName:function(members, userId){
+			var l = members.length-1;
+			return members.reduce(function(prevValue, currentValue, index, arr){
+				return currentValue.uid == userId ? prevValue : prevValue + currentValue.name + (index == l ? '': ', ');
+			}, '')
+		}
+	}
+</script>

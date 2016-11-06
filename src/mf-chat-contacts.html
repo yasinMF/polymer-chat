@@ -100,7 +100,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               <div>[[contact.name]]</div>
               <div secondary>[[contact.email]]</div>
             </paper-item-body>
-            <!-- <iron-icon icon="warning"></iron-icon> -->
           </paper-item>
         </template>
       </iron-selector>
@@ -159,10 +158,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }.bind(this));
 
         })
-
-        
-        // this.$.searchQuery.getStoredValue('users')
-        
       },
 
       _contactFilter:function(item){
@@ -200,11 +195,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 delete item.email;
                 delete item.$key;
                 return item;
-              })
+              }),
+              userAccess:{}
             }
 
             keys.forEach(function(item){
-              conversation[item] = true;
+              conversation.userAccess[item] = true;
             })
 
             console.log('creating conversation', conversation, conversationId)
