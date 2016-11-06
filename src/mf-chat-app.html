@@ -38,6 +38,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 		<iron-pages class="fullbleed" selected="[[_getCurrentPage(signedIn, statusKnown, routeData.page)]]" attr-for-selected="name" fallback-selection="[[_getFallbackPage(signedIn, statusKnown)]]">
 			<mf-chat-login user="{{user}}" status-known="{{statusKnown}}" signed-in="{{signedIn}}" name="login"></mf-chat-login>
+			
 			<mf-chat-home user="{{user}}" name="home"></mf-chat-home>
 			<mf-chat-contacts user="{{user}}" name="contacts"></mf-chat-contacts>
 		</iron-pages>
@@ -53,6 +54,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 			],
 
 			_userChanged:function(user, signedIn, statusKnown){
+				console.log('user changed', user);
 				if(user.hasOwnProperty('uid') && (this.routeData.page == 'login' || !this.routeData.page)){
 					this.set('route.path', 'home')
 				}

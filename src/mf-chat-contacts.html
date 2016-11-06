@@ -58,7 +58,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <firebase-query
       id="searchQuery"
       app-name="mf-chat"
-      path="users"
       order-by-child="name"
       data="{{queryResponse}}">
     </firebase-query>
@@ -66,7 +65,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <firebase-document
       id="conversationsDocument"
       app-name="mf-chat"
-      path=""
+      path="[[conversationPath]]"
       data="{{conversation}}">
     </firebase-document>
 
@@ -95,7 +94,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <div class="content">
       <iron-selector selected-values="{{selectedContacts}}" multi items="[[contacts]]" attr-for-selected="value" >
-        <template is="dom-repeat" items="[[contacts]]" as="contact" filter="_contactFilter">
+        <template id="contactList" is="dom-repeat" items="[[contacts]]" as="contact" filter="_contactFilter">
           <paper-item value="[[contact]]">
             <paper-item-body two-line>
               <div>[[contact.name]]</div>
@@ -109,7 +108,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
     <div class="footer-button">
-      <paper-button on-tap="_createConversation">
+      <paper-button on-tap="_createConversationIfNotExists">
         Send message
       </paper-button>
     </div>
@@ -140,49 +139,103 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       ],
 
       _queryChanged:function(query){
-        this.loading = true;
-        let ref = this.$.searchQuery.ref;
-        ref.once('value', function(snapshot) {
-          console.log('complete')
-          this.loading = false;
-          this.set('contacts', [])
-          this.set('contacts', this.queryResponse);
-        }.bind(this));
+        console.log('query changed')
+
+      
+        this.async(function(){
+          this.$.searchQuery.reset();
+          this.$.searchQuery.path = 'users';
+
+          this.loading = true;
+          let ref = this.$.searchQuery.ref;
+          ref.once('value', function(snapshot) {
+            
+            this.loading = false;
+            this.set('contacts', [])
+            this.set('contacts', this.queryResponse);
+            console.log('complete', this.contacts, this.queryResponse)
+
+            this.$.contactList.render();
+          }.bind(this));
+
+        })
+
+        
+        // this.$.searchQuery.getStoredValue('users')
+        
       },
 
       _contactFilter:function(item){
         return item.uid != this.user.uid && item.name.toLowerCase().includes(this.searchTerm.toLowerCase()) 
       },
 
-      _createConversation:function(){
+      _createConversationIfNotExists:function(){
 
-        let keys = this.selectedContacts.map(function(item){
+        var members = [this.user].concat(this.selectedContacts);
+        
+        let keys = members.map(function(item){
           return item.uid
         });
 
-        keys.push(this.user.uid);
-        keys.sort();
- 
-        let conversationId = keys.join('').split('').reduce(function(prevHash, currVal){
+        let conversationId = this._getConversationId(keys)
+        
+        this.conversationPath = 'conversations/'+conversationId;
+
+        this._checkIfConversationExists().then(function(conversationExists){
+          console.log('conversation exists', conversationExists);
+          if(conversationExists){
+            // window.location = '/conversation/'+conversationId
+          }else{
+            
+
+            let initalMessage = {
+              type:'annotation',
+              content:'Chat started',
+              timestamp:Date.now()
+            }
+
+            let conversation = {
+              messages:[initalMessage],
+              members:members.map(function(item){
+                delete item.email;
+                delete item.$key;
+                return item;
+              })
+            }
+
+            keys.forEach(function(item){
+              conversation[item] = true;
+            })
+
+            console.log('creating conversation', conversation, conversationId)
+
+            this.set('conversation', conversation);
+            this.$.conversationsDocument.save('conversations', conversationId).then(function(response){
+              console.log('created conversation');
+              // this.$.conversationsDocument.reset();
+              // window.location = '/conversation/'+conversationId
+            }.bind(this))
+
+          } 
+        }.bind(this));
+      },
+
+      _getConversationId:function(keys){
+        return keys.sort().join('').split('').reduce(function(prevHash, currVal){
           return ((prevHash << 5) - prevHash) + currVal.charCodeAt(0)
         }, 0);
+      },
 
-
-        console.log('id is', conversationId)
-        
-        var conversation = {
-          messages:[],
-        }
-
-        keys.forEach(function(item){
-          conversation[item] = true;
-        })
-
-        this.set('conversation', conversation);
-
-        this.$.conversationsDocument.save('conversations', conversationId).then(function(response){
-          console.log('created conversation', response);
+      _checkIfConversationExists:function() {
+        var promise =  new Promise(function(resolve, reject){
+          
+          let conversationRef = this.$.conversationsDocument.ref;
+          conversationRef.once('value', function(snapshot) {
+          let exists = (snapshot.val() !== null);
+            resolve(exists);
+          });
         }.bind(this))
+        return promise;
       }
 
     });

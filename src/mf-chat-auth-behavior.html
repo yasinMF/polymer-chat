@@ -41,9 +41,9 @@
 		},
 
 		_authDataChanged:function(){
-			
+			console.log('auth data changed', this.authData, this.auto);
 			if(this.authData && this.auto){
-				console.log('auth data changed', this.authData, this.auto);
+				
 				this.userPath = 'users/'+this.authData.uid;
 			}
 		},
@@ -72,11 +72,11 @@
     	this.$.auth.signOut().then(function(){
     		console.log('signed out');
 
-    		this.async(function(){
-          this.$.userDocument.reset();
-					this.set('user', '');
-	    		this.auto = true;
-    		}, 1)
+    	// 	this.async(function(){
+     //      this.$.userDocument.reset();
+					// this.set('user', '');
+	    // 		this.auto = true;
+    	// 	}, 1)
     		
     	}.bind(this));
     	
