@@ -57,23 +57,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <app-location route="{{route}}"></app-location>
 
-    <mf-chat-firebase-query
-      app-name="mf-chat"
-      path="[[queryPath]]"
-      start-at="[[searchTerm]]"
-      limit-to-first="20"
-      order-by-child="lowercaseName"
-      data="{{contacts}}">
-    </mf-chat-firebase-query>
-
-    <firebase-document
-      id="conversationsDocument"
-      app-name="mf-chat"
-      path="[[conversationPath]]"
-      data="{{conversation}}">
-    </firebase-document>
-
-
     <app-header-layout fullbleed has-scrolling-region>
       <app-header>
         <div class="horizontal layout">
@@ -127,7 +110,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     Polymer({
       is: 'mf-chat-contacts',
 
+      behaviors: [
+        MfChatUtilityBehavior
+      ],
+
       properties:{
+        appName:{
+          type:String,
+          value:'mf-chat'
+        },
+
         queryResponse: {
           type: Object,
         },
@@ -135,16 +127,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         loading:{
           type: Boolean,
           value: true
+        },
+
+        searchTerm:{
+          type:String,
+          value:''
         }
       },
 
-      attributeChanged: function(name, type) {
+      observers:[
+        '_searchTermChanged(searchTerm)',
+        '_userChanged(user.uid)'
+      ],
 
+      attributeChanged: function(name, type) {
         if(this.getAttribute(name).includes('iron-selected')){
           this.searchTerm = '';
-          this.queryPath = 'users';
-          this.$.contactList.render();
+          this.set('selectedContacts', []);
         }
+      },
+
+      _searchTermChanged:function(){
+        this.db.ref('users').orderByChild('lowercaseName').startAt(this.searchTerm).limitToFirst(20).once('value', function(snapshot){
+          console.log('Users are', snapshot.val());
+          this.set('contacts', Object.values(snapshot.val()));
+        }.bind(this));
+      },
+
+      _userChanged:function(){
+        this.$.contactList.render();
       },
 
       _contactFilter:function(item){
@@ -153,7 +164,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _createConversationIfNotExists:function(){
 
-        this.$.conversationsDocument.reset();
+        // this.$.conversationsDocument.reset();
 
         var members = [this.user].concat(this.selectedContacts);
         
@@ -163,43 +174,42 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         let conversationId = this._getConversationId(keys)
         
-        this.conversationPath = 'conversations/'+conversationId;
+        // this.conversationPath = 'conversations/'+conversationId;
 
-        this._checkIfConversationExists().then(function(conversationExists){
+        this._checkIfConversationExists(conversationId).then(function(conversationExists){
           console.log('conversation exists', conversationExists);
           if(conversationExists){
             this.set('route.path', '/conversation/'+conversationId)
           }else{
             
 
-            let initalMessage = {
-              type:'annotation',
-              content:'Chat started',
-              timestamp:Date.now()
-            }
+            console.log('creating conversation', conversationId);
+
+            let membersObj = {}
+            keys.forEach(function(item){
+              membersObj[item] = true;
+            });
 
             let conversation = {
-              messages:[initalMessage],
-              members:members.map(function(item){
-                delete item.email;
-                delete item.$key;
-                return item;
-              }),
-              userAccess:{}
+              members:membersObj
             }
 
+            var mergedUpdate = {}
+            mergedUpdate['conversations/'+conversationId] = conversation;
+
             keys.forEach(function(item){
-              conversation.userAccess[item] = true;
-            })
+              mergedUpdate['users/'+item+'/conversations/'+conversationId] = true;
+            });
 
-            console.log('creating conversation', conversation, conversationId);
-
-            this.set('conversation', conversation);
-
-            this.$.conversationsDocument.save('conversations', conversationId).then(function(response){
-              console.log('created conversation');
-              this.set('route.path', '/conversation/'+conversationId)
-            }.bind(this))
+            this.db.ref().update(mergedUpdate).then(function(){
+              console.log('updated all the shit');
+              let initalMessage = {
+                type:'annotation',
+                content:'Chat started',
+                timestamp:Date.now()
+              }
+              this._addMessageToConversation(initalMessage, conversationId, keys);
+            }.bind(this));
 
           } 
         }.bind(this));
@@ -211,10 +221,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }, 0);
       },
 
-      _checkIfConversationExists:function() {
+      _checkIfConversationExists:function(conversationId) {
         var promise =  new Promise(function(resolve, reject){
           
-          let conversationRef = this.$.conversationsDocument.ref;
+          let conversationRef = this.db.ref('conversations/'+conversationId)
           conversationRef.once('value', function(snapshot) {
           let exists = (snapshot.val() !== null);
             resolve(exists);

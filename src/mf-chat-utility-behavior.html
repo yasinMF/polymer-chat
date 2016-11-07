@@ -1,13 +1,18 @@
 
 
 <script type="text/javascript">
-	MfChatUtilityBehavior = {
+	MfChatUtilityBehaviorImpl = {
 		
 		properties:{
 			firebaseQueryLoading:{
 				type: Boolean,
 				value: true
-			}
+			},
+
+			appName:{
+	      type:String,
+	      value:'mf-chat'
+	    },
 		},
 
 		_getConversationName:function(members, userId){
@@ -39,5 +44,51 @@
 			return new Date(messages[messages.length-1].timestamp).toISOString()
 		},
 
+		_addMessageToConversation:function(message, conversationId, users){
+
+			let mergedUpdate = {}
+			let messageKey = this.db.ref('conversations/'+conversationId+'/messages').push().key
+			mergedUpdate['conversations/'+conversationId+'/messages/'+messageKey] = message;
+			mergedUpdate['conversations/'+conversationId+'/lastMessage'] = message;
+
+			users.forEach(function(item){
+        mergedUpdate['users/'+item+'/conversations/'+conversationId] = {lastUpdated:message.timestamp};
+      });
+
+			this.db.ref().update(mergedUpdate).then(function(){
+				console.log('message posted');
+			})
+
+		},
+
+		_spawnPushMessage:function(message, userId){
+
+			if (!Push) {
+          // the push.js library hasn't loaded or we don't have any messages
+          return;
+      }
+			if (userId === message.user.uid) {
+          // the current user wrote the last message
+          return;
+      }
+
+      Push.create(message.user.name, {
+          body: message.content,
+          icon: message.user.avatar,
+          timeout: 10000,
+          onClick: function() {
+              window.focus();
+              this.close();
+          }
+      });
+		}
+
 	}
+
+	MfChatUtilityBehavior = [
+		MfChatUtilityBehaviorImpl,
+		Polymer.FirebaseDatabaseBehavior
+	]
+
+
 </script>

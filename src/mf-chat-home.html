@@ -41,14 +41,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
 
 
-    <mf-chat-firebase-query
-      id="searchQuery"
-      app-name="mf-chat"
-      path="conversations"
-      order-by-child="userAccess/[[user.uid]]"
-      equal-to="true"
-      data="{{conversations}}">
-    </mf-chat-firebase-query>
+
+
 
     <app-header-layout fullbleed has-scrolling-region>
       <app-header>
@@ -72,7 +66,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div class="content">
 
         <template is="dom-repeat" items="[[conversations]]" as="conversation">
-          <mf-chat-list-item conversation="[[conversation]]" user-id="[[user.uid]]"></mf-chat-list-item>
+          <!-- <p>[[conversation]]</p> -->
+          <mf-chat-list-item conversation-id="[[conversation]]" user-id="[[user.uid]]"></mf-chat-list-item>
         </template>
     
       </div>
@@ -96,6 +91,47 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
       behaviors:[MfChatUtilityBehavior],
+
+      properties:{
+        appName:{
+          type:String,
+          value:'mf-chat'
+        },
+
+        conversations:{
+          type:Array,
+          value:[]
+        }
+      },
+
+      observers:[
+        '_conversationsChanged(foo)',
+        '_userChanged(user.uid)'
+      ],
+
+      _conversationsChanged:function(){
+        console.log('conversations changed', this.foo)
+      },
+
+      _userChanged:function(){
+        console.log('HOME user changed', this.user.uid)
+        this.set('conversations', []);
+
+        this.db.ref('users/'+this.user.uid+'/conversations/').on('value', function(snapshot){
+          console.log('conversation', snapshot.val())
+          if(snapshot.val()){
+            this.set('conversations', Object.keys(snapshot.val()));
+          }
+          
+
+          // this.push('conversations', snapshot.key)
+        }.bind(this));
+
+        // this.db.ref('users/'+this.user.uid+'/conversations').orderByChild('timestamp').on('child_moved', function(snapshot){
+        //   console.log('conversations reordered', snapshot.key)
+        //   // this.push('conversations', snapshot.key)
+        // }.bind(this));
+      }
 
       
 

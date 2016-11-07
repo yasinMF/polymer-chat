@@ -54,32 +54,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     </style>
 
-    <a href="/conversation/[[conversation.$key]]">
+    <a href="/conversation/[[conversationId]]">
 
       <div class="horizontal layout list-item center">
         <iron-image src="" width="48" height="48" sizing="contain"></iron-image>
         <div class="flex">
-          <p>[[_getConversationName(conversation.members, userId)]]</p>
+          <p>[[conversationName]]</p>
           <div class="horizontal layout secondary">
-            <p class="flex">[[_getLastMessage(conversation.messages)]]</p>
-            <p><moment-js date="[[_getLastUpdated(conversation.messages)]]" date-format="HH:mm" to-now=""></moment-js></p>
+            <p class="flex">[[lastMessage]]</p>
+            <p><moment-js date="[[lastUpdated]]" date-format="HH:mm" to-now=""></moment-js></p>
           </div>
         </div>
         
       </div>
-<!--       <paper-item>
 
-        <template is="dom-if" if="[[_isEqual(conversation.members.length, 2)]]">
-          
-        </template>
-        
-        
-
-        <paper-item-body two-line>
-          <div>[[_getConversationName(conversation.members, userId)]]</div>
-          <div secondary>[[_getLastMessage(conversation.messages)]]</div>
-        </paper-item-body>
-      </paper-item> -->
     </a>
 
   </template>
@@ -91,6 +79,49 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
       behaviors:[MfChatUtilityBehavior],
+
+      properties:{
+        appName:{
+          type:String,
+          value:'mf-chat'
+        },
+
+        members:{
+          type:Array,
+          value:[]
+        }
+      },
+
+      observers:[
+        '_conversationIdChanged(conversationId, userId)'
+      ],
+
+      _conversationIdChanged:function(conversationId, userId){
+        this.conversationName = ''
+
+        this.db.ref('conversations/'+conversationId+'/lastMessage').on('value', function(snapshot){
+          let message = snapshot.val();
+          this.lastMessage = message.content
+          this.lastUpdated = message.timestamp
+
+          this._spawnPushMessage(message, userId)
+        }.bind(this));
+
+
+
+        this.db.ref('conversations/'+conversationId+'/members').once('value', function(snapshot){
+          let members = snapshot.val();
+
+          Object.keys(snapshot.val()).forEach(function(memberKey){
+            this.db.ref('users/'+memberKey+'/name').once('value', function(memberSnap){
+              this.conversationName = this.conversationName+memberSnap.val()+', '
+            }.bind(this))
+          }.bind(this));
+
+        }.bind(this));
+      }
+
+
 
 
       

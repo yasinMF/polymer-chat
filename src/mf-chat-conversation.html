@@ -65,12 +65,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       ></app-route>
 
     <firebase-document
-      id="conversationDocument"
+      id="conversationMembers"
       app-name="mf-chat"
-      path="conversations/[[routeData.conversationId]]"
-      data="{{conversation}}">
+      path="conversations/[[routeData.conversationId]]/members"
+      data="{{conversationMembers}}">
     </firebase-document>
 
+    <firebase-query
+      id="query"
+      app-name="mf-chat"
+      path="conversations/[[routeData.conversationId]]/messages"
+      data="{{messages}}">
+    </firebase-query>
 
 
     <app-header-layout fullbleed has-scrolling-region>
@@ -85,7 +91,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </app-header>
       <div class="content">
 
-      <template is="dom-repeat" items="[[conversation.messages]]" as="message">
+      <template is="dom-repeat" items="[[messages]]" as="message">
         <template is="dom-if" if="[[_isEqual(message.type, 'annotation')]]">
           <p class="annotation">[[message.content]]</p>
         </template>
@@ -115,6 +121,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       is: 'mf-chat-conversation',
 
       properties: {
+
+          appName:{
+            type:String,
+            value:'mf-chat'
+          },
           conversation: {
               type: Object,
               value: {},
@@ -123,11 +134,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               type: Number,
               value: 0,
           },
+
+
       },
 
       observers: [
           '_onMessagesChanged(conversation.messages.*)',
-          '_onReceiveMessage(numMessages)',
+          // '_onReceiveMessage(numMessages)',
       ],
 
       behaviors:[MfChatUtilityBehavior],
@@ -148,7 +161,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           timestamp:Date.now()
         }
 
-        this.push('conversation.messages', message);
+        // this.push('conversation.messages', message);
+        this._addMessageToConversation(message, this.routeData.conversationId, Object.keys(this.conversationMembers));
         this.userMessage = null;
     },
 
