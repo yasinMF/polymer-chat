@@ -43,6 +43,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           color: #fff;
       }
 
+      .markdown-html a,
+      .markdown-html a:visited {
+          color: inherit;
+          text-decoration: underline;
+      }
+
     </style>
 
 
@@ -82,7 +88,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <template is="dom-if" if="[[_isEqual(message.type, 'text')]]">
             <div class$="message [[_themOrMe(message.user.uid, user.uid)]]" data-uid$="[[message.user.uid]]">
-                <p class="text">[[message.content]]</p>
+                <marked-element markdown="[[message.content]]">
+                    <div class="markdown-html"></div>
+                </marked-element>
             </div>
         </template>
 
