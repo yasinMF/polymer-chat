@@ -52,7 +52,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       </app-header>
       <div class="content">
-        
+
       <template is="dom-repeat" items="[[conversation.messages]]" as="message">
         <template is="dom-if" if="[[_isEqual(message.type, 'annotation')]]">
           <p class="annotation">[[message.content]]</p>
@@ -64,7 +64,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
       </template>
-      
+
       </div>
     </app-header-layout>
 
@@ -77,6 +77,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <script>
     Polymer({
       is: 'mf-chat-conversation',
+
+      properties: {
+          conversation: {
+              type: Object,
+              value: {},
+          },
+          numMessages: {
+              type: Number,
+              value: 0,
+          },
+      },
+
+      observers: [
+          '_onMessagesChanged(conversation.messages.*)',
+          '_onReceiveMessage(numMessages)',
+      ],
 
       behaviors:[MfChatUtilityBehavior],
 
@@ -98,10 +114,43 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         this.push('conversation.messages', message);
         this.userMessage = null;
-      }
+    },
 
+    _onMessagesChanged: function(x) {
+        if (!this.conversation || !this.conversation.messages) {
+            return;
+        }
 
+        let newNumMessages = this.conversation.messages.length || 0;
+
+        if (newNumMessages != this.numMessages) {
+            this.set('numMessages', newNumMessages);
+        }
+    },
+
+      _onReceiveMessage: function(numMessages) {
+          if (!Push || !numMessages) {
+              // the push.js library hasn't loaded or we don't have any messages
+              return;
+          }
+
+          let message = this.conversation.messages[numMessages - 1];
+
+          if (this.user.uid === message.user.uid) {
+              // the current user wrote the last message
+              return;
+          }
+
+            Push.create(message.user.name, {
+                body: message.content,
+                icon: message.user.avatar,
+                timeout: 10000,
+                onClick: function() {
+                    window.focus();
+                    this.close();
+                }
+            });
+      },
     });
   </script>
 </dom-module>
-
