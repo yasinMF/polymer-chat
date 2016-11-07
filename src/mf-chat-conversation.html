@@ -18,7 +18,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       :host {
         display: block;
         position: relative;
-        background-color: red;
+        background-color: #efefef;
+      }
+
+      .content {
+          padding: 0 2rem 3rem;
+      }
+
+      .annotation {
+          font-size: .75em;
+          opacity: .75;
+      }
+
+      .message {
+          background: #fff;
+          overflow: hidden;
+          padding: 0 .8rem;
+          margin: .5rem 0;
+      }
+
+      .message.me {
+          text-align: right;
+          background: #6f6f6f;
+          color: #fff;
       }
 
     </style>
@@ -59,7 +81,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </template>
 
         <template is="dom-if" if="[[_isEqual(message.type, 'text')]]">
-          <p class="text">[[message.content]]</p>
+            <div class$="message [[_themOrMe(message.user.uid, user.uid)]]" data-uid$="[[message.user.uid]]">
+                <p class="text">[[message.content]]</p>
+            </div>
         </template>
 
 
@@ -151,6 +175,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 }
             });
       },
+
+      _themOrMe: function(messageUid, userUid) {
+          return messageUid === userUid ? 'me' : 'not-me';
+      },
+
     });
   </script>
 </dom-module>
