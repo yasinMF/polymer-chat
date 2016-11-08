@@ -24,24 +24,41 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         border-radius: 0px;
       }
 
+
       paper-item{
         --paper-item-focused-before:{
           display: none;
         };
       }
 
-      paper-input{
-        width: 100%;
+      app-header{
+        background-color: var(--dark-background-color);
+      }
+
+      .content{
+        padding-bottom: 6rem;
+      }
+
+      .toolbar{
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+      }
+
+      .toolbar iron-selector{
+        margin-left: -0.25rem;
+        margin-right: -0.25rem;
       }
 
       .contact-chip{
-        background-color: rgba(0,0,0,0.12);
+        background-color: #fff;
         padding-top: 0.25rem;
         padding-bottom: 0.25rem;
         padding-left: 0.5rem;
         padding-right: 0.5rem;
         margin: 0.25rem;
         border-radius: 100px;
+        color: var(--primary-text-light);
+        cursor: pointer;
       }
 
       .contact-chip span{
@@ -50,33 +67,41 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         padding-right: 0.5rem;
       }
 
-      app-header{
-        background-color: #fff;
+      paper-input{
+        width: 100%;
+        color: #fff;
+        --paper-input-container-color: var(--secondary-text-dark);
+        --paper-input-container-input-color: #fff;
       }
     </style>
 
     <app-location route="{{route}}"></app-location>
 
-    <app-header-layout fullbleed has-scrolling-region>
-      <app-header>
-        <div class="horizontal layout">
+    <app-header-layout id="layout" fullbleed has-scrolling-region>
+      <app-header class="inverse">
+        <app-toolbar>
           <a href="/home"><paper-icon-button icon="arrow-back"></paper-icon-button></a>
-          <div>
-            <iron-selector class="flex horizontal layout wrap" selected-values="{{selectedContacts}}" multi items="[[contacts]]" attr-for-selected="value">
-              <template is="dom-repeat" items="[[selectedContacts]]" as="contact">
-                <div class="contact-chip horizontal layout" value="[[contact]]">
-                  <span>
-                    [[contact.name]]
-                  </span>
-                  <iron-icon icon="close"></iron-icon>
-
-                </div>
-              </template>
-            </iron-selector>
-            
-            <paper-input value="{{searchTerm}}" placeholder="Enter a name..." no-label-float></paper-input>
+          <div main-title>
+            <h1 class="title">New conversation</h1>
           </div>
+        </app-toolbar>
+
+        <div class="toolbar">
+          <iron-selector class="flex horizontal layout wrap" selected-values="{{selectedContacts}}" multi items="[[contacts]]" attr-for-selected="value">
+            <template is="dom-repeat" items="[[selectedContacts]]" as="contact">
+              <div class="contact-chip horizontal layout" value="[[contact]]">
+                <span>
+                  [[contact.name]]
+                </span>
+                <iron-icon icon="close"></iron-icon>
+              </div>
+            </template>
+          </iron-selector>
+          
+          <paper-input id="search" value="{{searchTerm}}" placeholder="Enter a name..." no-label-float></paper-input>
+
         </div>
+
       </app-header>
 
       <div class="content">
@@ -95,7 +120,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
     <div class="footer-button">
-      <paper-button on-tap="_createConversationIfNotExists">
+      <paper-button class="primary" on-tap="_createConversationIfNotExists">
         Send message
       </paper-button>
     </div>
@@ -137,13 +162,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       observers:[
         '_searchTermChanged(searchTerm)',
-        '_userChanged(user.uid)'
+        '_userChanged(user.uid)',
+        '_selectedChanged(selectedContacts.*)'
       ],
 
       attributeChanged: function(name, type) {
         if(this.getAttribute(name).includes('iron-selected')){
           this.searchTerm = '';
           this.set('selectedContacts', []);
+          this.$.search.focus();
         }
       },
 
@@ -158,13 +185,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.$.contactList.render();
       },
 
+      _selectedChanged:function(){
+        this.$.layout.notifyResize();
+      },
+
       _contactFilter:function(item){
         return item.uid != this.user.uid && item.name.toLowerCase().includes(this.searchTerm.toLowerCase()) 
       },
 
       _createConversationIfNotExists:function(){
-
-        // this.$.conversationsDocument.reset();
 
         var members = [this.user].concat(this.selectedContacts);
         
@@ -173,8 +202,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         let conversationId = this._getConversationId(keys)
-        
-        // this.conversationPath = 'conversations/'+conversationId;
+      
 
         this._checkIfConversationExists(conversationId).then(function(conversationExists){
           console.log('conversation exists', conversationExists);
@@ -206,7 +234,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               let initalMessage = {
                 type:'annotation',
                 content:'Chat started',
-                timestamp:Date.now()
+                timestamp:Date.now(),
+                user:this.selectedContacts[0]
               }
               this._addMessageToConversation(initalMessage, conversationId, keys);
             }.bind(this));
@@ -214,6 +243,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           } 
         }.bind(this));
       },
+
 
       _getConversationId:function(keys){
         return keys.sort().join('').split('').reduce(function(prevHash, currVal){

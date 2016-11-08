@@ -18,8 +18,39 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <style include="shared-styles iron-flex iron-flex-alignment">
       :host {
         display: block;
+        /*overflow-y: auto;*/
       }
 
+
+
+      .card{
+        background-color: #fff;
+        width: 328px;
+        height: 478px;
+        overflow:hidden;
+      }
+
+      .card-section{
+        padding: 2rem;
+      }
+
+      .card-section.google{
+        padding-bottom: 0px;
+      }
+
+
+      paper-button.google-button{
+        color: #1976D2;
+        border-color: #1976D2;
+      }
+
+      .login-button{
+        margin-top: 2rem;
+      }
+
+      neon-animated-pages{
+        display: block;
+      }
 
     </style>
 
@@ -52,48 +83,59 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <!-- <h1>[[signedIn]], [[statusKnown]], [[authData.uid]], [[user.name]]</h1> -->
 
-    <iron-pages selected="[[queryParams.type]]" attr-for-selected="name" fallback-selection="login">
+    <div class="fullbleed vertical layout center center-justified scrollable">
 
-      <div class="fullbleed vertical layout center center-justified" name="login">
+      
 
-        <div>
-          <div>
-            <paper-button raised on-tap="_signInWithGoogle">Log in with Google</paper-button>
+      <neon-animated-pages class="card" id="" selected="[[queryParams.type]]" attr-for-selected="name" fallback-selection="login" entry-animation="[[_getEntryAnimation(queryParams.type)]]" exit-animation="[[_getExitAnimation(queryParams.type)]]">
+
+        <div class="card vertical layout center-justified" name="login">
+
+          <div class="card-section google">
+            <paper-button class="secondary google-button" on-tap="_signInWithGoogle"><iron-icon icon="mf-chat-icons:google"></iron-icon>Log in with Google</paper-button>
           </div>
 
-          <div>
+          <div class="card-section">
+            <h1 class="subheader">Or use email &amp; password</h1>
             <paper-input label="Email" value="{{email}}"></paper-input>
             <paper-input label="Password" value="{{password}}" type="password"></paper-input>
-            <paper-button raised on-tap="_signInWithEmail">Log in</paper-button>
+            <paper-button class="login-button primary" on-tap="_signInWithEmail">Log in</paper-button>
           </div>
 
-          <p>Don't have an account? <a href="/login?type=signup">Sign up now</a></p>
+
         </div>
 
-      </div>
+
+        <div class="card vertical layout center-justified" name="signup">
 
 
-      <div class="fullbleed vertical layout center center-justified" name="signup">
 
-        <div>
-          <div>
-            <paper-button raised  on-tap="_signInWithGoogle">Sign up with Google</paper-button>
-          </div>
+            <div class="card-section google">
+              <paper-button class="secondary google-button" on-tap="_signInWithGoogle"><iron-icon icon="mf-chat-icons:google"></iron-icon>Sign up with Google</paper-button>
+            </div>
+
+            <div class="card-section">
+              <h1 class="subheader">Sign up with email &amp; password</h1>
+              <paper-input label="Email" value="{{email}}"></paper-input>
+              <paper-input label="Password" value="{{password}}" type="password"></paper-input>
+              <paper-input label="Name" value="{{username}}"></paper-input>
+              <paper-button class="login-button primary" on-tap="_createNewUser">Create account</paper-button>
+            </div>
+
+            <!-- <p>Already have an account? <a href="/login?type=login">Log in</a></p> -->
 
 
-          <div>
-            <paper-input label="Email" value="{{email}}"></paper-input>
-            <paper-input label="Password" value="{{password}}" type="password"></paper-input>
-            <paper-input label="Name" value="{{username}}"></paper-input>
-            <paper-button raised on-tap="_createNewUser">Create account</paper-button>
-          </div>
-
-          <p>Already have an account? <a href="/login?type=login">Log in</a></p>
         </div>
 
-      </div>
+      </neon-animated-pages>
 
-    </iron-pages>
+
+
+      <iron-pages id="" selected="[[queryParams.type]]" attr-for-selected="name" fallback-selection="login">
+        <p class="inverse small" name="login">Don't have an account? <a href="/login?type=signup">Sign up now</a></p>
+        <p class="inverse small" name="signup">Already have an account? <a href="/login?type=login">Log in</a></p> 
+      </iron-pages>
+    </div>
 
     <paper-toast id="toast" text="[[message]]"></paper-toast>
 
@@ -105,7 +147,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     Polymer({
       is: 'mf-chat-login',
 
-      behaviors:[MfChatAuthBehavior],
+      behaviors:[
+        MfChatAuthBehavior,
+        Polymer.NeonAnimationRunnerBehavior
+      ],
+
+
 
       properties:{
 
@@ -122,6 +169,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this._signOut();
         }
       },
+
+      _getEntryAnimation:function(type){
+        return type == 'login' ? 'slide-from-right-animation' : 'slide-from-left-animation'
+      },
+
+      _getExitAnimation:function(type){
+        return type == 'login' ? 'slide-left-animation' : 'slide-right-animation'
+      }
 
     });
   </script>

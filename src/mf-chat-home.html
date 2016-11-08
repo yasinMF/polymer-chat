@@ -18,11 +18,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       :host {
         display: block;
         position: relative;
+        background-color: var(--dark-background-color);
       }
 
-      paper-button{
-        border-radius: 0px;
-      }
 
       app-header{
         position: relative;
@@ -33,10 +31,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         width: 200px;
       }
 
-      app-toolbar paper-menu-button{
-        padding: 0px;
-      }
 
+      .content{
+        padding-bottom: 6rem;
+      }
 
     </style>
 
@@ -46,7 +44,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <app-header-layout fullbleed has-scrolling-region>
       <app-header>
-        <app-toolbar>
+        <app-toolbar class="inverse">
           <div main-title>
             <h1 class="title">MF Chat</h1>
           </div>
@@ -76,7 +74,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     
     <a class="footer-button" href="/contacts">
-      <paper-button>
+      <paper-button class="primary">
         New conversation
       </paper-button>
     </a>

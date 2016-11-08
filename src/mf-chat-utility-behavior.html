@@ -40,8 +40,8 @@
 			// return moment(time, 'YYYYMMDD').fromNow();
 		},
 
-		_getLastUpdated:function(messages){
-			return new Date(messages[messages.length-1].timestamp).toISOString()
+		_timestampToISO:function(timestamp){
+			return new Date(timestamp).toISOString()
 		},
 
 		_addMessageToConversation:function(message, conversationId, users){

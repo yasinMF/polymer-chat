@@ -14,6 +14,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <dom-module id="shared-styles">
   <template>
     <style>
+
+      :root {
+        --primary-color: #FFC400;
+        --primary-color-light: #FFE082;
+        --accent-color: #FFC400;
+        --dark-background-color: #263238;
+
+        --primary-text-light: rgba(0,0,0,0.87);
+        --secondary-text-light: rgba(0,0,0,0.54);
+
+        --primary-text-dark: rgba(255,255,255,0.87);
+        --secondary-text-dark: rgba(255,255,255,0.54);
+
+        --divider-color: rgba(0,0,0,0.12);
+
+
+        --large-padding: 2rem;
+      }
+
       .fullbleed{
         position: absolute;
         top: 0px;
@@ -22,9 +41,54 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         bottom: 0px;
       }
 
+      .scrollable{
+        overflow-y: auto;
+      }
+
+      .inverse{
+        color: var(--primary-text-dark);
+      }
+
+      app-toolbar paper-menu-button{
+        padding: 0px;
+      }
+
+      app-toolbar paper-icon-button{
+        margin: 0px;
+      }
+
+
+      
+
       paper-button{
         width: 100%;
         margin: 0px;
+        border-radius: 0px;
+        font-weight: 900;
+        font-size: 0.825rem;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+      }
+
+      paper-button:hover{
+        box-shadow: 0px 1px 2px rgba(0,0,0,0.25);
+      }
+
+      paper-button.secondary{
+        box-sizing: border-box;
+        border: 1px solid var(--primary-color);
+        color: var(--primary-color);
+      }
+
+      paper-button.primary{
+
+        background-color: var(--primary-color);
+        color: #fff;
+      }
+
+
+      paper-button iron-icon{
+        margin-right: 0.5rem;
       }
 
       paper-input{
@@ -44,16 +108,36 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         right: 0px;
       }
 
+      .footer-button paper-button{
+        
+      }
+
       a{
         text-decoration: none;
         color: inherit;
       }
 
+      p a{
+        text-decoration: underline;
+      }
+
       .title{
         font-size: 1rem;
         font-weight: 900;
-        /*text-transform: uppercase;*/
         line-height: 1.5rem;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+
+      .subheader{
+        font-size: 0.6875rem;
+        line-height: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        text-align: center;
+        color: var(--secondary-text-light);
       }
     </style>
   </template>
