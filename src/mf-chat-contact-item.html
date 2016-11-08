@@ -12,7 +12,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <!-- Chat Login auths a user via Google sign in, and creates a record for them if they're a new user -->
 
-<dom-module id="mf-chat-list-item">
+<dom-module id="mf-chat-contact-item">
   <template>
     <style include="shared-styles iron-flex iron-flex-alignment">
       :host {
@@ -63,72 +63,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         color: var(--secondary-text-dark);
       }
 
+      paper-checkbox{
+        --paper-checkbox-unchecked-color: var(--secondary-text-dark);
+      }
+
     </style>
 
-    <a href="/conversation/[[conversationId]]">
 
-      <div class="horizontal layout list-item center">
-        <div class="img-wrapper">
-          <iron-image src="[[avatar]]" sizing="contain" preload fade></iron-image>
-        </div>
-        <div class="flex">
-          <p>[[conversationName]]</p>
-          <div class="horizontal layout secondary">
-            <p class="flex">[[lastMessage]]</p>
-            <p><moment-js date="[[lastUpdated]]" from-now utc></p>
-          </div>
-        </div>
-        
+
+    <div class="horizontal layout list-item center">
+      <div class="img-wrapper">
+        <iron-image src="[[contact.avatar]]" sizing="contain" preload fade></iron-image>
       </div>
+      <div class="flex">
+        <p>[[contact.name]]</p>
+        <div class="horizontal layout secondary">
+          <p class="flex">[[contact.email]]</p>
+        </div>
+      </div>
+      <paper-checkbox checked$=[[selected]]></paper-checkbox>
+      
+    </div>
 
-    </a>
 
   </template>
 
   <script>
     Polymer({
-      is: 'mf-chat-list-item',
+      is: 'mf-chat-contact-item',
 
-      behaviors:[MfChatUtilityBehavior],
-
-      properties:{
-        appName:{
-          type:String,
-          value:'mf-chat'
-        },
-
-
-
-      },
-
-      observers:[
-        '_conversationIdChanged(conversationId, userId)'
-      ],
-
-      _conversationIdChanged:function(conversationId, userId){
-        this.conversationName = ''
-        console.log('conversation id is', conversationId)
-        if(conversationId == null){
-          return;
-        }
-
-        this.db.ref('conversations/'+conversationId+'/lastMessage').on('value', function(snapshot){
-          let message = snapshot.val();
-          console.log('last message is', message)
-          if(message != null){
-            this.lastMessage = message.content
-            this.lastUpdated = message.timestamp
-            this.avatar = message.user.avatar
-
-            this._spawnPushMessage(message, userId)
-          }
-          
-        }.bind(this));
-
-        this.db.ref('users/'+userId+'/conversations/'+conversationId+'/name').on('value', function(snapshot){
-          this.conversationName = snapshot.val();
-        }.bind(this))
-      }
 
 
 

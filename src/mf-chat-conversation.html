@@ -18,28 +18,47 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       :host {
         display: block;
         position: relative;
-        background-color: #efefef;
+        background-color: #11232B;
       }
 
-      .content {
-          padding: 0 2rem 3rem;
+      app-header-layout{
+        bottom: 8rem;
       }
 
       .annotation {
           font-size: .75em;
-          opacity: .75;
       }
 
-      .message {
-          background: #fff;
+      .message-wrapper .message {
+          background: rgba(255, 255, 255, 0.1);
           overflow: hidden;
-          padding: 0 .8rem;
-          margin: .5rem 0;
+          padding: 0 1rem;
+          margin-top: 0.125rem;
+          margin-bottom: 0.125rem;
+          border-radius: 1rem;
+          /*min-width: 50%;*/
+          color: #fff;
+          /*margin: .5rem 0;*/
       }
 
-      .message.me {
+      .message-wrapper .message p{
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .message-wrapper{
+        @apply(--layout-start);
+      }
+
+      .me{
+        @apply(--layout-end);
+      }
+
+      .me .message {
+          background-color: var(--primary-color);
           text-align: right;
-          background: #6f6f6f;
+
+          /*background: #6f6f6f;*/
           color: #fff;
       }
 
@@ -53,6 +72,53 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           max-width: 100%;
       }
 
+      .annotation{
+        padding: 1.5rem;
+        text-align: center;
+      }
+
+      .footer-button{
+        padding: 1.5rem;
+      }
+
+      .footer-button .text-area{
+        padding: 1.5rem;
+        background-color: #fff;
+      }
+
+      .content{
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+      }
+
+      #end{
+        width: 100%;
+        padding-bottom: 8rem;
+      }
+
+      .avatar.img-wrapper{
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        width: 32px;
+        height: 32px;
+        border-radius: 16px;
+        overflow: hidden;
+        background-color: #263238;
+      }
+
+      .avatar.img-wrapper iron-image{
+        width: 32px;
+        height: 32px;
+      }
+
+      #send-button{
+        color: var(--primary-color);
+        margin-left: 1rem;
+      }
+
+      #send-button[disabled]{
+        color: var(--divider-color);
+      }
     </style>
 
 
@@ -65,7 +131,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       ></app-route>
 
     <firebase-document
-      id="conversationMembers"
+      id="conversationNameDocument"
+      app-name="mf-chat"
+      path="users/[[user.uid]]/conversations/[[routeData.conversationId]]/name"
+      data="{{conversationName}}">
+    </firebase-document>
+
+    <firebase-document
+      id="conversationMembersDocument"
       app-name="mf-chat"
       path="conversations/[[routeData.conversationId]]/members"
       data="{{conversationMembers}}">
@@ -78,40 +151,61 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       data="{{messages}}">
     </firebase-query>
 
+    <iron-media-query query="(min-width: 640px)" query-matches="{{wideLayout}}"></iron-media-query>
 
     <app-header-layout fullbleed has-scrolling-region>
-      <app-header>
+      <app-header class="inverse" reveals>
         <app-toolbar>
-
-          <a href="/home"><paper-icon-button icon="arrow-back"></paper-icon-button></a>
-          <div main-title>[[_getConversationName(conversation.members, user.uid)]]</div>
+        
+          <a href="/home" hidden$="[[wideLayout]]"><paper-icon-button icon="arrow-back"></paper-icon-button></a>
+          <div main-title>
+            <h1 class="title">[[conversationName]]</h1>
+          </div>
 
         </app-toolbar>
 
       </app-header>
-      <div class="content">
+      <div class="content" id="messages">
 
       <template is="dom-repeat" items="[[messages]]" as="message">
+
         <template is="dom-if" if="[[_isEqual(message.type, 'annotation')]]">
-          <p class="annotation">[[message.content]]</p>
+          <p class="annotation small inverse message">[[message.content]] – <moment-js date="[[message.timestamp]]" from-now utc></p>
         </template>
 
         <template is="dom-if" if="[[_isEqual(message.type, 'text')]]">
-            <div class$="message [[_themOrMe(message.user.uid, user.uid)]]" data-uid$="[[message.user.uid]]">
+
+          <p class="annotation small inverse message" hidden$="[[!_shouldShowTimeAnnotation(message, index)]]"><moment-js date="[[message.timestamp]]" from-now utc></moment-js></p>
+
+          <div class$="vertical layout message-wrapper [[_themOrMe(message.user.uid, user.uid)]]">
+            <div class="message" data-uid$="[[message.user.uid]]">
                 <marked-element markdown="[[message.content]]">
                     <div class="markdown-html"></div>
                 </marked-element>
             </div>
+
+            <div class="img-wrapper avatar" hidden$="[[!_shouldShowAvatar(message, index)]]">
+              <iron-image src="[[message.user.avatar]]" sizing="contain" preload fade></iron-image>
+            </div>
+
+
+          </div>
+
         </template>
 
 
       </template>
 
+      <div id="end"></div>
+
       </div>
     </app-header-layout>
 
     <div class="footer-button" id="message-control">
-      <paper-textarea id="messageInput" placeholder="Message..." class="flex" value="{{userMessage}}" on-keydown="_onKeydown" no-label-float></paper-textarea>
+      <div class="text-area horizontal layout center">
+        <paper-textarea id="messageInput" placeholder="Message [[conversationName]]..." class="flex" value="{{userMessage}}" on-keydown="_onKeydown" no-label-float></paper-textarea>
+        <paper-icon-button disabled$="[[!userMessage]]" id="send-button" icon="send" on-tap="_sendTextMessage"></paper-icon-button>
+      </div>
     </div>
 
   </template>
@@ -135,15 +229,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               value: 0,
           },
 
+          userMessage:{
+            type: String,
+            value: null
+          }
+
 
       },
 
       observers: [
-          '_onMessagesChanged(conversation.messages.*)',
+          '_onMessagesChanged(messages.*)',
           // '_onReceiveMessage(numMessages)',
+          '_conversationNameChanged(conversationName)'
       ],
 
       behaviors:[MfChatUtilityBehavior],
+
+      _conversationNameChanged:function(){
+        console.log('conversation name changed');
+      },
 
       _onKeydown:function(e){
         if(!e.shiftKey && e.code == "Enter"){
@@ -164,47 +268,51 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // this.push('conversation.messages', message);
         this._addMessageToConversation(message, this.routeData.conversationId, Object.keys(this.conversationMembers));
         this.userMessage = null;
-    },
+      },
 
-    _onMessagesChanged: function(x) {
-        if (!this.conversation || !this.conversation.messages) {
-            return;
-        }
-
-        let newNumMessages = this.conversation.messages.length || 0;
-
-        if (newNumMessages != this.numMessages) {
-            this.set('numMessages', newNumMessages);
-        }
-    },
-
-      _onReceiveMessage: function(numMessages) {
-          if (!Push || !numMessages) {
-              // the push.js library hasn't loaded or we don't have any messages
-              return;
-          }
-
-          let message = this.conversation.messages[numMessages - 1];
-
-          if (this.user.uid === message.user.uid) {
-              // the current user wrote the last message
-              return;
-          }
-
-            Push.create(message.user.name, {
-                body: message.content,
-                icon: message.user.avatar,
-                timeout: 10000,
-                onClick: function() {
-                    window.focus();
-                    this.close();
-                }
-            });
+      _onMessagesChanged:function(){
+        this.async(function(){
+          // var messages = Polymer.dom(this.$.messages).querySelectorAll('.message');
+          // if(messages.length > 0){
+          //   var message = messages[messages.length-1];
+          //   message.scrollIntoView(false);
+          // }
+          this.$.end.scrollIntoView(false);
+        }, 1);
       },
 
       _themOrMe: function(messageUid, userUid) {
           return messageUid === userUid ? 'me' : 'not-me';
       },
+
+      _shouldShowAvatar: function(message, index){
+        if(index == this.messages.length-1){
+          console.log('last message!');
+          return true;
+        }
+
+        var nextMessage = this.messages[index+1]
+        if(nextMessage.user.uid == message.user.uid){
+          return false;
+        }else{
+          return true;
+        }
+      },
+
+      _shouldShowTimeAnnotation :function(message, index){
+        if(index == 0){
+          console.log('last message!');
+          return true;
+        }
+
+        var lastMessage = this.messages[index-1]
+        if((message.timestamp - lastMessage.timestamp) > 120000){
+          return true;
+        }else{
+          return false;
+        }
+
+      }
 
     });
   </script>

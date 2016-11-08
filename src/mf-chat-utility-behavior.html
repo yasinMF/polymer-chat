@@ -41,27 +41,32 @@
 		},
 
 		_timestampToISO:function(timestamp){
+			console.log('getting iso string', new Date(timestamp).toISOString())
 			return new Date(timestamp).toISOString()
 		},
 
 		_addMessageToConversation:function(message, conversationId, users){
+			return new Promise(function(resolve, reject){
+				let mergedUpdate = {}
+				let messageKey = this.db.ref('conversations/'+conversationId+'/messages').push().key
+				mergedUpdate['conversations/'+conversationId+'/messages/'+messageKey] = message;
+				mergedUpdate['conversations/'+conversationId+'/lastMessage'] = message;
 
-			let mergedUpdate = {}
-			let messageKey = this.db.ref('conversations/'+conversationId+'/messages').push().key
-			mergedUpdate['conversations/'+conversationId+'/messages/'+messageKey] = message;
-			mergedUpdate['conversations/'+conversationId+'/lastMessage'] = message;
+				users.forEach(function(item){
+	        mergedUpdate['users/'+item+'/conversations/'+conversationId+'/lastUpdated'] = message.timestamp;
+	      });
 
-			users.forEach(function(item){
-        mergedUpdate['users/'+item+'/conversations/'+conversationId] = {lastUpdated:message.timestamp};
-      });
-
-			this.db.ref().update(mergedUpdate).then(function(){
-				console.log('message posted');
-			})
+				this.db.ref().update(mergedUpdate).then(function(){
+					console.log('message posted');
+					resolve();
+				})
+			}.bind(this));
+			
 
 		},
 
 		_spawnPushMessage:function(message, userId){
+
 
 			if (!Push) {
           // the push.js library hasn't loaded or we don't have any messages

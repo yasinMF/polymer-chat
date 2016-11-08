@@ -36,6 +36,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       .content{
+        padding-top: 1rem;
         padding-bottom: 6rem;
       }
 
@@ -51,20 +52,38 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       .contact-chip{
         background-color: #fff;
-        padding-top: 0.25rem;
-        padding-bottom: 0.25rem;
-        padding-left: 0.5rem;
+        /*padding-top: 0.25rem;
+        padding-bottom: 0.25rem;*/
+        /*padding-left: 0.5rem;*/
         padding-right: 0.5rem;
         margin: 0.25rem;
         border-radius: 100px;
         color: var(--primary-text-light);
         cursor: pointer;
+        overflow: hidden;
       }
 
       .contact-chip span{
         display: block;
         padding-left: 0.5rem;
         padding-right: 0.5rem;
+      }
+
+      .contact-chip iron-icon{
+        color: var(--secondary-text-light);
+      }
+
+      .contact-chip .img-wrapper{
+        width: 32px;
+        height: 32px;
+        border-radius: 16px;
+        overflow: hidden;
+        background-color: #263238;
+      }
+
+      .contact-chip .img-wrapper iron-image{
+        width: 32px;
+        height: 32px;
       }
 
       paper-input{
@@ -89,7 +108,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div class="toolbar">
           <iron-selector class="flex horizontal layout wrap" selected-values="{{selectedContacts}}" multi items="[[contacts]]" attr-for-selected="value">
             <template is="dom-repeat" items="[[selectedContacts]]" as="contact">
-              <div class="contact-chip horizontal layout" value="[[contact]]">
+              <div class="contact-chip horizontal layout center" value="[[contact]]">
+                <div class="img-wrapper">
+                  <iron-image src="[[contact.avatar]]" sizing="contain" preload fade></iron-image>
+                </div>
                 <span>
                   [[contact.name]]
                 </span>
@@ -105,15 +127,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </app-header>
 
       <div class="content">
-        <iron-selector selected-values="{{selectedContacts}}" multi items="[[contacts]]" attr-for-selected="value" >
+        <iron-selector selected-values="{{selectedContacts}}" multi items="[[contacts]]" attr-for-selected="value" selected-attribute="selected">
+
           <template id="contactList" is="dom-repeat" items="[[contacts]]" as="contact" filter="_contactFilter">
-            <paper-item value="[[contact]]">
-              <paper-item-body two-line>
-                <div>[[contact.name]]</div>
-                <div secondary>[[contact.email]]</div>
-              </paper-item-body>
-            </paper-item>
+            <mf-chat-contact-item value="[[contact]]" contact="[[contact]]"></mf-chat-contact-item>
+
+
           </template>
+
         </iron-selector>
       </div>
     </app-header-layout>
@@ -202,7 +223,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         let conversationId = this._getConversationId(keys)
-      
 
         this._checkIfConversationExists(conversationId).then(function(conversationExists){
           console.log('conversation exists', conversationExists);
@@ -210,12 +230,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.set('route.path', '/conversation/'+conversationId)
           }else{
             
-
             console.log('creating conversation', conversationId);
 
             let membersObj = {}
             keys.forEach(function(item){
-              membersObj[item] = true;
+              membersObj[item] = true
             });
 
             let conversation = {
@@ -225,8 +244,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             var mergedUpdate = {}
             mergedUpdate['conversations/'+conversationId] = conversation;
 
+            
+
             keys.forEach(function(item){
-              mergedUpdate['users/'+item+'/conversations/'+conversationId] = true;
+              let conversationName = ''
+
+              for(var i=0; i<members.length; i++){
+                let member = members[i];
+                if(member.uid != item){
+                  conversationName = conversationName+member.name;
+
+                  if(i < members.length-1){
+                    // console.log(i, members.length)
+                    conversationName = conversationName+', '
+                  }
+                } 
+              }
+
+              mergedUpdate['users/'+item+'/conversations/'+conversationId] = {
+                name:conversationName,
+                lastUpdated:Date.now()
+              };
             });
 
             this.db.ref().update(mergedUpdate).then(function(){
@@ -237,7 +275,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 timestamp:Date.now(),
                 user:this.selectedContacts[0]
               }
-              this._addMessageToConversation(initalMessage, conversationId, keys);
+              this._addMessageToConversation(initalMessage, conversationId, keys).then(function(){
+                this.set('route.path', '/conversation/'+conversationId);
+              }.bind(this));
+
+              
             }.bind(this));
 
           } 
