@@ -32,8 +32,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         margin-right: 1rem;
         min-width: 48px;
         overflow: hidden;
+        position: relative;
 
       }
+
+      #notification{
+        width: 0.75rem;
+        height: 0.75rem;
+        position: absolute;
+        top: 1.3rem;
+        right: 0px;
+        background-color: #FF1744;
+        z-index: 100;
+        border-radius: 100px;
+      }
+
+
 
       iron-image{
         width:48px;
@@ -44,6 +58,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         border-top: 1px solid var(--divider-color);
         padding-top: 1rem;
         padding-bottom: 1rem;
+        position: relative;
       }
 
       p{
@@ -68,7 +83,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <a href="/conversation/[[conversationId]]">
 
       <div class="horizontal layout list-item center">
+        <div id="notification" hidden$="[[!_isUnseen(lastUpdated, lastSeen)]]"></div>
         <div class="img-wrapper">
+          
           <iron-image src="[[avatar]]" sizing="contain" preload fade></iron-image>
         </div>
         <div class="flex">
@@ -128,6 +145,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.db.ref('users/'+userId+'/conversations/'+conversationId+'/name').on('value', function(snapshot){
           this.conversationName = snapshot.val();
         }.bind(this))
+
+        this.db.ref('users/'+userId+'/conversations/'+conversationId+'/lastSeen').on('value', function(snapshot){
+          this.lastSeen = snapshot.val();
+        }.bind(this))
+      },
+
+      _isUnseen:function(updated, seen){
+        return updated > seen;
       }
 
 

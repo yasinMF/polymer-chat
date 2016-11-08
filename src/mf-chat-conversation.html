@@ -245,6 +245,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       behaviors:[MfChatUtilityBehavior],
 
+      attributeChanged: function(name, type) {
+        // be aware of when the page is shown, and reset the state.
+        // console.log('Showing search page', this.routeData.productId);
+
+        if(this.getAttribute(name).includes('iron-selected')){
+          console.log('page got shown');
+
+        }
+      },
+
       _conversationNameChanged:function(){
         console.log('conversation name changed');
       },
@@ -278,6 +288,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           //   message.scrollIntoView(false);
           // }
           this.$.end.scrollIntoView(false);
+          this.db.ref('users/'+this.user.uid+'/conversations/'+this.routeData.conversationId+'/lastSeen').set(Date.now());
         }, 1);
       },
 
