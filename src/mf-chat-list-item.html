@@ -130,7 +130,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
 
         this.db.ref('conversations/'+conversationId+'/lastMessage').on('value', function(snapshot){
-          let message = snapshot.val();
+          var message = snapshot.val();
           console.log('last message is', message)
           if(message != null){
             this.lastMessage = message.content

@@ -18,7 +18,7 @@
 		_getConversationName:function(members, userId){
 			var l = members.length-1;
 
-			let name =  members.reduce(function(prevValue, currentValue, index, arr){
+			var name =  members.reduce(function(prevValue, currentValue, index, arr){
 				return currentValue.uid == userId ? prevValue : prevValue + currentValue.name +', ';
 			}, '')
 			return name.substring(0, name.length - 2);
@@ -47,8 +47,8 @@
 
 		_addMessageToConversation:function(message, conversationId, users){
 			return new Promise(function(resolve, reject){
-				let mergedUpdate = {}
-				let messageKey = this.db.ref('conversations/'+conversationId+'/messages').push().key
+				var mergedUpdate = {}
+				var messageKey = this.db.ref('conversations/'+conversationId+'/messages').push().key
 				mergedUpdate['conversations/'+conversationId+'/messages/'+messageKey] = message;
 				mergedUpdate['conversations/'+conversationId+'/lastMessage'] = message;
 

@@ -218,11 +218,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         var members = [this.user].concat(this.selectedContacts);
         
-        let keys = members.map(function(item){
+        var keys = members.map(function(item){
           return item.uid
         });
 
-        let conversationId = this._getConversationId(keys)
+        var conversationId = this._getConversationId(keys)
 
         this._checkIfConversationExists(conversationId).then(function(conversationExists){
           console.log('conversation exists', conversationExists);
@@ -232,12 +232,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             
             console.log('creating conversation', conversationId);
 
-            let membersObj = {}
+            var membersObj = {}
             keys.forEach(function(item){
               membersObj[item] = true
             });
 
-            let conversation = {
+            var conversation = {
               members:membersObj
             }
 
@@ -247,10 +247,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             
 
             keys.forEach(function(item){
-              let conversationName = ''
+              var conversationName = ''
 
               for(var i=0; i<members.length; i++){
-                let member = members[i];
+                var member = members[i];
                 if(member.uid != item){
                   conversationName = conversationName+member.name;
 
@@ -269,7 +269,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             this.db.ref().update(mergedUpdate).then(function(){
               console.log('updated all the shit');
-              let initalMessage = {
+              var initalMessage = {
                 type:'annotation',
                 content:'Chat started',
                 timestamp:Date.now(),
@@ -296,9 +296,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _checkIfConversationExists:function(conversationId) {
         var promise =  new Promise(function(resolve, reject){
           
-          let conversationRef = this.db.ref('conversations/'+conversationId)
+          var conversationRef = this.db.ref('conversations/'+conversationId)
           conversationRef.once('value', function(snapshot) {
-          let exists = (snapshot.val() !== null);
+          var exists = (snapshot.val() !== null);
             resolve(exists);
           });
         }.bind(this))

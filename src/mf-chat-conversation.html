@@ -2,8 +2,8 @@
 @license
 Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+The compvare set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The compvare set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
@@ -184,7 +184,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </marked-element>
             </div>
 
-            <div class="img-wrapper avatar" hidden$="[[!_shouldShowAvatar(message, index)]]">
+            <div class="img-wrapper avatar" hidden$="[[!_shouldShowAvatar(message, index, messages.length)]]">
               <iron-image src="[[message.user.avatar]]" sizing="contain" preload fade></iron-image>
             </div>
 
@@ -268,7 +268,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       _sendTextMessage:function(){
-        let message = {
+        var message = {
           type:'text',
           content:this.userMessage,
           user:this.user,
@@ -288,7 +288,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           //   message.scrollIntoView(false);
           // }
           this.$.end.scrollIntoView(false);
-          this.db.ref('users/'+this.user.uid+'/conversations/'+this.routeData.conversationId+'/lastSeen').set(Date.now());
+          // this.$.
+          if(this.user && this.routeData.conversationId){
+            this.db.ref('users/'+this.user.uid+'/conversations/'+this.routeData.conversationId+'/lastSeen').set(Date.now());
+          }
+          
         }, 1);
       },
 

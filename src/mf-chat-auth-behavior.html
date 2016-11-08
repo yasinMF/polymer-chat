@@ -83,9 +83,9 @@
     _checkIfUserExists:function() {
       var promise =  new Promise(function(resolve, reject){
           
-          let ref = this.$.userDocument.ref;
+          var ref = this.$.userDocument.ref;
           ref.once('value', function(snapshot) {
-          let exists = (snapshot.val() !== null);
+          var exists = (snapshot.val() !== null);
             resolve(exists);
           });
         }.bind(this))
@@ -99,9 +99,9 @@
     	this._checkIfUserExists().then(function(userExists){
 
     		if(!userExists){
-    			let username = this.username ? this.username : '';
-          let name = authResponse.displayName ? authResponse.displayName : username
-    			let user = {
+    			var username = this.username ? this.username : '';
+          var name = authResponse.displayName ? authResponse.displayName : username
+    			var user = {
 	          name:name,
             lowercaseName:name.toLowerCase(),
 	          email:authResponse.email,
